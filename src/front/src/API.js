@@ -1,5 +1,5 @@
 
-
+import axios from "axios";
 import React, { useState, useContext, useEffect } from 'react';
 
 export const availableGenomeAndDataset = {
@@ -19,7 +19,7 @@ export const searchColorScheme = {
     "SNP": "#ff4000",
     "insertion": "#ffff00",
     "deletion": "#00bfff",
-    "others": "#00ffbf",
+    "other": "#00ffbf",
 }
 
 
@@ -63,6 +63,115 @@ export function GoToEpiBrowserURLConstructor(genomeAssemly, chrom, pos_start, po
     }
     return GoToEpiBrowserURLConstructorSimple(genomeAssemly, chrom.toString()+":"+pos_start.toString()+"-"+pos_end.toString())
 }
+
+
+
+
+
+export function clinVarSearchByLocationURLConstructor(genomeAssemly, chrom, posStart, posEnd) {
+
+    let res = "https://api.genome.ucsc.edu/getData/track?genome=" + genomeAssemly + ";track=clinvarMain;";
+    res = res + "chrom=" + chrom.toString() + ";";
+    res += "start=" + posStart.toString() + ";";
+    res += "end=" + posEnd.toString() + ";";
+
+    return res
+}
+
+export function clinVarSearchResultCleaner(d){
+    let res = [];
+    for (let r of d.data.clinvarMain){
+        let rc = {"chr":"", "startPos":"", "endPos":"", "source":"", "conversion":"", "variantType":"", "description":"", "dbSNPID":"",}; // "":"",
+
+        rc.chr = r.chrom
+        rc.startPos = r.chromStart
+        rc.endPos = r.chromEnd
+        rc.source = "ClinVar"
+        rc.conversion = r.name
+        rc.dbSNPID = "rs"+r.snpId
+        if (r.type === "single nucleotide variant"){rc.variantType = "SNV"}
+        if (r.type === "Insertion"){rc.variantType = "insertion"}
+        if (r.type === "Deletion"){rc.variantType = "deletion"}
+        if (r.type === "Microsatellite"){rc.variantType = "other"}
+        if (r.type === "Indel"){rc.variantType = "other"}
+        if (r.type === "Duplication"){rc.variantType = "other"}
+        if (r.type === "Inversion"){rc.variantType = "other"}
+        if (r.type === "Variation"){rc.variantType = "other"}
+        if (r.type === ""){rc.variantType = ""}
+
+        if (rc.variantType == ""){console.log(r.type)}
+        //console.log(r)
+        //console.log(rc)
+        //console.log("")
+        res.push(rc)
+    }
+    return res
+}
+export function clinVarSearchResultCleaner2(d){
+    let res = [];
+    for (let r of d.data.clinvarMain){
+        let rc = {"chr":"", "startPos":"", "endPos":"", "source":"", "conversion":"", "variantType":"", "description":"", "dbSNPID":"",}; // "":"",
+
+        rc.chr = r.chrom
+        rc.startPos = r.chromStart
+        rc.endPos = r.chromEnd
+        rc.source = "GnomAD"
+        rc.conversion = r.name
+        rc.dbSNPID = "rs"+r.snpId
+        if (r.type === "single nucleotide variant"){rc.variantType = "SNV"}
+        if (r.type === "Insertion"){rc.variantType = "insertion"}
+        if (r.type === "Deletion"){rc.variantType = "deletion"}
+        if (r.type === "Microsatellite"){rc.variantType = "other"}
+        if (r.type === "Indel"){rc.variantType = "other"}
+        if (r.type === "Duplication"){rc.variantType = "other"}
+        if (r.type === "Inversion"){rc.variantType = "other"}
+        if (r.type === "Variation"){rc.variantType = "other"}
+        if (r.type === ""){rc.variantType = ""}
+
+        if (rc.variantType == ""){console.log(r.type)}
+        //console.log(r)
+        //console.log(rc)
+        //console.log("")
+        res.push(rc)
+    }
+    return res
+}
+
+export function variationSearch(genomeAssemly, chrom, posStart, posEnd){
+
+    const requestPool = [];
+    let clinvarURL = clinVarSearchByLocationURLConstructor(genomeAssemly, chrom, posStart, posEnd);
+    let clinvarPromise = axios.get(clinvarURL)
+
+    let clinvarURL2 = clinVarSearchByLocationURLConstructor(genomeAssemly, chrom, posStart, posEnd);
+    let clinvarPromise2 = axios.get(clinvarURL2)
+
+    let combinedPromise = Promise.all([clinvarPromise, clinvarPromise2]);
+    // combinedPromise.then((d) => {console.log(d)})
+
+    const cleanedCombinedResult = new Promise((resolve, reject) => {
+
+        combinedPromise.then((d) => {
+            let result = [];
+
+            result = result.concat(clinVarSearchResultCleaner(d[0]))
+            result = result.concat(clinVarSearchResultCleaner2(d[1]))
+            console.log(result)
+            resolve(result)
+        })
+
+    });
+
+    return cleanedCombinedResult
+}
+
+
+
+
+
+
+
+
 
 
 

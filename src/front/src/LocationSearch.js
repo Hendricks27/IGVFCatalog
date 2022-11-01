@@ -1,15 +1,14 @@
 
 
 import React, {useEffect, useState} from "react";
-import {UCSCClinvarURLConstructor, availableGenomeAndDataset} from "./API";
+import {UCSCClinvarURLConstructor, availableGenomeAndDataset, variationSearch} from "./API";
 import {Empty, GenomeAssemblySelection, LocationSearchResult} from "./Module";
-
 
 
 export function LocationSearch(props){
 
     const [searchCount, setSearchCount] = useState(0);
-    const [genomicLocation, setGenomicLocation] = useState("chr3:1200000-2500000");
+    const [genomicLocation, setGenomicLocation] = useState("chr4:101200000-102500000");
 
     const [availableDatasetByGenomeAssembly, setAvailableDatasetByGenomeAssembly] = useState(availableGenomeAndDataset);
     const [genomeAssembly, setGenomeAssembly] = useState("hg38");

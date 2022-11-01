@@ -110,15 +110,15 @@ function ListGenePosition(props){
     const genePositionListOLD = (
         <li className={"geneNameOptions"}>
             {genePositions.map((gp) => <ul onClick={ function (e){
-                const loc = gp.chrom +":"+ gp.cdsStart +"-"+ gp.cdsEnd;
+                const loc = gp.chrom +":"+ gp.txStart +"-"+ gp.txEnd;
                 setGenomicLocation(loc);
                 setGenePositions([]);
-            }}  className={"geneNameOption"}>{gp.chrom +":"+ gp.cdsStart +"-"+ gp.cdsEnd}</ul>)}
+            }}  className={"geneNameOption"}>{gp.chrom +":"+ gp.txStart +"-"+ gp.txEnd}</ul>)}
         </li>
     )
 
-    let cdsMin = 1000000000000000000000000
-    let cdsMax = 0
+    let txMin = 1000000000000000000000000
+    let txMax = 0
     genePositions.map((gp) => {
         let exonStarts = gp.exonStarts.split(",");
         let exonEnds = gp.exonEnds.split(",");
@@ -129,21 +129,22 @@ function ListGenePosition(props){
             exonEnds.pop()
         }
 
-        let everything = exonStarts.concat(exonEnds, [gp.cdsStart, gp.cdsEnd]);
+        let everything = exonStarts.concat(exonEnds, [gp.txStart, gp.txEnd]);
 
-        if (Math.min.apply(Math, everything) < cdsMin){cdsMin = Math.min.apply(Math, everything)}
-        if (Math.max.apply(Math, everything) > cdsMax){cdsMax = Math.max.apply(Math, everything)}
+        if (Math.min.apply(Math, everything) < txMin){txMin = Math.min.apply(Math, everything)}
+        if (Math.max.apply(Math, everything) > txMax){txMax = Math.max.apply(Math, everything)}
     })
 
     const coord2hundred = (coord) => {
-        const r = cdsMax - cdsMin;
-        return (coord-cdsMin)/r
+        const r = txMax - txMin;
+        return (coord-txMin)/r
     }
 
     const genePositionList = (
         <div className={"genePositionContainer"}>
         <table>
             {genePositions.map((gp) => {
+
                 let source = gp.collection;
                 let coord = gp.chrom + ":" + gp.txStart + "-" + gp.txEnd;
                 let description = gp.description;
@@ -163,6 +164,18 @@ function ListGenePosition(props){
                 // x 0-200 y 0-60
                 let svgWidth = 200;
                 let svgHeight = 60;
+                const toSVGX = (x) => {
+                    return (x+0.03)*(svgWidth*0.94)
+                }
+                const ScaleSVGX = (x) => {
+                    return x*(svgWidth*0.94)
+                }
+                const toSVGY = (y) => {
+                    return (1-y)*svgHeight
+                }
+                const toSVGCoord = (x, y) => {
+                    return [toSVGX(x), toSVGY(y)]
+                }
                 let svgColor = "blue";
                 if (gp.transcriptionClass === "problem"){
                     svgColor = "red"
@@ -177,16 +190,53 @@ function ListGenePosition(props){
                 } else if (gp.transcriptionClass === ""){
                     svgColor = "yellow"
                 }
-                console.log(gp.transcriptionClass)
-                const toSVGX = (x) => {
-                    return x*svgWidth
+
+                const largestGap = [0, 0];
+                let directionSVG = "";
+                for (let i = 0; i < exonStarts.length-1; i++) {
+
+                    let exonE = exonEnds[i];
+                    let exonSNext = exonStarts[i+1];
+
+                    if (exonSNext - exonE > largestGap[1] - largestGap[0]){
+                        largestGap[0] = exonE;
+                        largestGap[1] = exonSNext
+                    }
                 }
-                const toSVGY = (y) => {
-                    return (1-y)*svgHeight
+
+                let x1 = coord2hundred(largestGap[0]);
+                let x2 = coord2hundred(largestGap[1]);
+                let c = (x1+x2)/2;
+
+                x1 = coord2hundred(gp.txEnd);
+                x2 = coord2hundred(gp.txEnd)+0.03;
+                if (strand === "+"){
+                    x1 = coord2hundred(gp.txStart);
+                    x2 = coord2hundred(gp.txStart)-0.03;
                 }
-                const toSVGCoord = (x, y) => {
-                    return [toSVGX(x), toSVGY(y)]
-                }
+                x1 = toSVGX(x1)
+                x2 = toSVGX(x2)
+
+
+                directionSVG =
+                    <>
+                        <line
+                            x1={x1}
+                            y1={toSVGY(0.5)}
+                            x2={x2}
+                            y2={toSVGY(0.6)}
+                            stroke={svgColor}
+                            stroke-width="1px"></line>
+                        <line
+                            x1={x1}
+                            y1={toSVGY(0.5)}
+                            x2={x2}
+                            y2={toSVGY(0.4)}
+                            stroke={svgColor}
+                            stroke-width="1px"></line>
+                    </>
+
+
                 let geneRegionSVG = <svg
                     width={svgWidth.toString()+"px"}
                     height={svgHeight.toString()+"px"}
@@ -199,7 +249,7 @@ function ListGenePosition(props){
                         {
                             Object.keys(exonStarts).map((i) => {
                                 let exonLength = exonEnds[i]-exonStarts[i];
-                                let exonPixel = exonLength / (cdsMax - cdsMin) * svgWidth * 1.05
+                                let exonPixel = ScaleSVGX(exonLength / (txMax - txMin) ) // * 1.05
                                 return <rect
                                     x={toSVGX(coord2hundred(exonStarts[i]))}
                                     y={toSVGY(0.65)}
@@ -210,6 +260,10 @@ function ListGenePosition(props){
                                 />
                             })
                         }
+                        {
+                            directionSVG
+                        }
+                        }
                     </g>
                 </svg>
 
@@ -219,7 +273,7 @@ function ListGenePosition(props){
                     setGenomicLocation(loc);
                     setGenePositions([]);
                 }} className={"genePositionRow"}>
-                    <td>{source}<br />{coord + "(" + strand + ")"}</td>
+                    <td>{source}<br />{coord}</td>
                     <td>{geneRegionSVG}</td>
                     <td style={{"fontSize": "10px"}}>{description}</td>
                 </tr>

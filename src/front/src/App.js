@@ -11,6 +11,8 @@ import CardLogo from "./images/loader.gif";
 import GeneSearchLogo from "./images/GeneSearchCard.jpeg";
 import LocationSearchLogo from "./images/LocationSearchCard.jpeg";
 
+import D3Element from "./D3Test";
+
 
 const pageTypeContext = React.createContext(null);
 
@@ -176,6 +178,7 @@ function PresetPage(props){
     return <>
         I said, it is a empty page... <br />
         Why don't you believe me
+        <D3Element></D3Element>
     </>
 }
 
