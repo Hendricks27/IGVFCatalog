@@ -1,10 +1,13 @@
 
 
 import React, { useState, useContext, useEffect } from 'react';
+import {BrowserRouter, Routes, Route, useSearchParams} from "react-router-dom";
 
 import {Empty, GenomeAssemblySelection} from "./Module";
 import {GeneSearch} from "./GeneSearch"
 import {LocationSearch} from "./LocationSearch"
+// import EnhancedTable from "./Variant.tsx"
+import VariantDetail from "./VariantDetail";
 
 import './App.css';
 import CardLogo from "./images/loader.gif";
@@ -31,15 +34,16 @@ function Header(props){
     const { pageType, setPageType } = useContext(pageTypeContext);
 
     return <li className={"navbar"}>
-      <ul
-          className={"navbarElement"}
-          onClick={() => setPageType("home")}>
-          <a className={"navbarElementHome navbarElementA"}>IGVF Catalog</a>
-      </ul>
-      <ul className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("geneSearch")}} >Gene Search</a></ul>
-      <ul className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("locSearch")}} >Location Search</a></ul>
-      <ul className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("about")}} >About</a></ul>
-      <ul className={"navbarElement"}><a className={"navbarElementA"} href={"https://github.com/Hendricks27/IGVFCatalog/issues"} target={"_blank"}>Contact</a></ul>
+        <ul
+            className={"navbarElement"}
+            onClick={() => setPageType("home")}>
+        <a className={"navbarElementHome navbarElementA"}>IGVF Catalog</a>
+        </ul>
+            <ul className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("geneSearch")}} >Gene Search</a></ul>
+            <ul className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("locSearch")}} >Location Search</a></ul>
+            <ul className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("variantID")}} >Variant</a></ul>
+            <ul className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("about")}} >About</a></ul>
+            <ul className={"navbarElement"}><a className={"navbarElementA"} href={"https://github.com/Hendricks27/IGVFCatalog/issues"} target={"_blank"}>Contact</a></ul>
     </li>
 }
 
@@ -56,7 +60,7 @@ function FooterOLD(props){
 
 function Footer(props){
     return <div className={"footer"}>
-        <span>Copyright© 2022-2022 Washington University in St. Louis. All rights reserved.</span><br />
+        <span>Copyright© 2022-2023 Washington University in St. Louis. All rights reserved.</span><br />
         <span>Developed by the <a href={"https://wang.wustl.edu/"} target="_blank">Wang Lab</a></span><br />
         <span>Terms and Conditions of Use</span>
     </div>
@@ -90,17 +94,18 @@ function HomePageContent(props){
         "imageURL": LocationSearchLogo
     })
     cardsData.push({
+        "title": "Variant Search",
+        "pageType": "variantID",
+        "description": "Search variant by ID",
+        "imageURL": CardLogo
+    })
+    cardsData.push({
         "title": "Presets",
         "pageType": "preset",
         "description": "Preset search result for viewing",
         "imageURL": GeneSearchLogo
     })
-    cardsData.push({
-        "title": "Placeholder",
-        "pageType": "placeholder",
-        "description": "Empty Page...",
-        "imageURL": CardLogo
-    })
+
 
 
     return <div> {cardsData.map((card) => Card(card))} </div>
@@ -116,15 +121,31 @@ function About(props){
 
 function Placeholder(props){
     return <>
-        I said, it is a empty page... <br />
-        Why don't you believe me
+        Empty Page
     </>
 }
 
 
 
-function IGVFMain(props) {
-    const [pageType, setPageType] = useState("home");
+function IGVFPageManager(props){
+
+    return <BrowserRouter>
+        <Routes>
+            <Route path="/" element={<IGVFMainPage />}></Route>
+        </Routes>
+    </BrowserRouter>
+}
+
+function IGVFMainPage(props) {
+
+    // TODO replace by route manager
+    let pttmp = "home"
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('variantID') != null){
+        pttmp ="variantID";
+    }
+
+    const [pageType, setPageType] = useState(pttmp);
 
 
     return (
@@ -139,13 +160,16 @@ function IGVFMain(props) {
                         switch(pageType) {
 
                             case "home":
-                                ele = <HomePageContent />
+                                ele = <HomePageContent urlParams={urlParams} />
                                 break;
                             case "geneSearch":
-                                ele = <GeneSearch />
+                                ele = <GeneSearch urlParams={urlParams}/>
                                 break;
                             case "locSearch":
-                                ele = <LocationSearch />
+                                ele = <LocationSearch urlParams={urlParams}/>
+                                break;
+                            case "variantID":
+                                ele = <VariantDetail urlParams={urlParams}/>
                                 break;
                             case "about":
                                 ele = <About />
@@ -176,15 +200,14 @@ function IGVFMain(props) {
 function PresetPage(props){
     let abc = ["dasda", "dadas", "dhsajkl", ];
     return <>
-        I said, it is a empty page... <br />
-        Why don't you believe me
+        Empty Page for now.
         <D3Element></D3Element>
     </>
 }
 
 
 
-export default IGVFMain;
+export default IGVFMainPage;
 
 
 

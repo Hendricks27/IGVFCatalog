@@ -1,0 +1,18 @@
+{
+  "files": {
+    "main.css": "./static/css/main.acf5761e.css",
+    "main.js": "./static/js/main.e9a74c98.js",
+    "static/js/787.28cb0dcd.chunk.js": "./static/js/787.28cb0dcd.chunk.js",
+    "static/media/LocationSearchCard.jpeg": "./static/media/LocationSearchCard.67f43493aaa338db30b2.jpeg",
+    "static/media/loader.gif": "./static/media/loader.d1716eed0620df098750.gif",
+    "static/media/GeneSearchCard.jpeg": "./static/media/GeneSearchCard.41f7e0e04c3470aef155.jpeg",
+    "index.html": "./index.html",
+    "main.acf5761e.css.map": "./static/css/main.acf5761e.css.map",
+    "main.e9a74c98.js.map": "./static/js/main.e9a74c98.js.map",
+    "787.28cb0dcd.chunk.js.map": "./static/js/787.28cb0dcd.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.acf5761e.css",
+    "static/js/main.e9a74c98.js"
+  ]
+}

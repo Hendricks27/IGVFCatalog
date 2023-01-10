@@ -473,7 +473,7 @@ function VariationSearchResultTable(props){
 
     return (<>
         <span>Click position to go to <a href={"http://epigenomegateway.wustl.edu/browser/"}>WashU Epigenome Browser</a></span>
-        <table style={{width: "100%"}}>
+        <table style={{width: "100%"}} >
             <thead>
             <tr>
                 <td onClick={() => {
@@ -526,7 +526,7 @@ function VariationSearchResultTable(props){
                 } }>Source</td>
             </tr>
             </thead>
-            <tbody>
+            <tbody className={"resultTableBody"}>
             { searchResultSorted.map((r) => {
 
                 if (!dataSourceFilter[r.source]){
@@ -547,13 +547,13 @@ function VariationSearchResultTable(props){
                 let span = parseInt(r.endPos) - parseInt(r.startPos) + 1
                 let pos = r.chr + ":" + r.startPos.toString() + "(+" + span.toString() + ")"
 
-                return <tr style={{backgroundColor: searchColorScheme[r.variantType], opacity: 0.5}}>
+                return <tr>
                     <td onClick={() => {
                         const gotourl = GoToEpiBrowserURLConstructor(genomeAssembly, r.chr, startpos, endpos);
                         window.open(gotourl, "_blank");
                     }
                     }>{pos}</td>
-                    <td>{r.variantType}</td>
+                    <td><div style={{backgroundColor: searchColorScheme[r.variantType], opacity: 0.5, width: "10px", height: "10px"}}> </div>{r.variantType}</td>
                     <td>{r.conversion}</td>
                     <td>{r.dbSNPID}</td>
                     <td>{r.description}</td>
@@ -562,6 +562,7 @@ function VariationSearchResultTable(props){
             }) }
             </tbody>
         </table>
+        <div style={{"height": "300px"}}></div>
     </>)
 
 }
