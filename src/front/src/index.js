@@ -3,15 +3,25 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import IGVFMainPage from './App';
 import reportWebVitals from './reportWebVitals';
+import {BrowserRouter, Route, Routes, useSearchParams} from "react-router-dom";
 
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <IGVFMainPage />
+    <IGVFPageManager />
   </React.StrictMode>
 );
+
+function IGVFPageManager(props){
+
+    return <BrowserRouter>
+        <Routes>
+            <Route path="/" element={<IGVFMainPage />}></Route>
+        </Routes>
+    </BrowserRouter>
+}
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

@@ -1,13 +1,14 @@
 
 
 import React, { useState, useContext, useEffect } from 'react';
-import {BrowserRouter, Routes, Route, useSearchParams} from "react-router-dom";
+import {BrowserRouter, Routes, Route, useSearchParams, useLocation} from "react-router-dom";
 
 import {Empty, GenomeAssemblySelection} from "./Module";
 import {GeneSearch} from "./GeneSearch"
 import {LocationSearch} from "./LocationSearch"
 // import EnhancedTable from "./Variant.tsx"
 import VariantDetail from "./VariantDetail";
+import Preset from "./Preset";
 
 import './App.css';
 import CardLogo from "./images/loader.gif";
@@ -15,7 +16,8 @@ import GeneSearchLogo from "./images/GeneSearchCard.jpeg";
 import LocationSearchLogo from "./images/LocationSearchCard.jpeg";
 
 import D3Element from "./D3Test";
-
+import {Table1Test} from "./ReusableElements"
+import {Tab} from "@mui/material";
 
 const pageTypeContext = React.createContext(null);
 
@@ -127,26 +129,24 @@ function Placeholder(props){
 
 
 
-function IGVFPageManager(props){
 
-    return <BrowserRouter>
-        <Routes>
-            <Route path="/" element={<IGVFMainPage />}></Route>
-        </Routes>
-    </BrowserRouter>
-}
 
 function IGVFMainPage(props) {
 
-    // TODO replace by route manager
+    const [searchParams, setSearchParams] = useSearchParams();
+
     let pttmp = "home"
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('variantID') != null){
+    if (searchParams.get('variantID') != null){
         pttmp ="variantID";
+    }
+    else if (searchParams.get('location') != null){
+        pttmp ="locSearch";
+    }
+    else if (searchParams.get('test') != null){
+        pttmp ="test";
     }
 
     const [pageType, setPageType] = useState(pttmp);
-
 
     return (
         <pageTypeContext.Provider value={{pageType, setPageType}}>
@@ -160,25 +160,28 @@ function IGVFMainPage(props) {
                         switch(pageType) {
 
                             case "home":
-                                ele = <HomePageContent urlParams={urlParams} />
+                                ele = <HomePageContent urlParams={searchParams} />
                                 break;
                             case "geneSearch":
-                                ele = <GeneSearch urlParams={urlParams}/>
+                                ele = <GeneSearch urlParams={searchParams}/>
                                 break;
                             case "locSearch":
-                                ele = <LocationSearch urlParams={urlParams}/>
+                                ele = <LocationSearch urlParams={searchParams}/>
                                 break;
                             case "variantID":
-                                ele = <VariantDetail urlParams={urlParams}/>
+                                ele = <VariantDetail urlParams={searchParams}/>
                                 break;
                             case "about":
                                 ele = <About />
                                 break;
                             case "preset":
-                                ele = <PresetPage />
+                                ele = <Preset />
                                 break;
                             case "placeholder":
                                 ele = <Placeholder />
+                                break;
+                            case "test":
+                                ele = <TestPage />
                                 break;
                             default:
                                 ele = <HomePageContent />
@@ -197,12 +200,9 @@ function IGVFMainPage(props) {
 }
 
 
-function PresetPage(props){
-    let abc = ["dasda", "dadas", "dhsajkl", ];
-    return <>
-        Empty Page for now.
-        <D3Element></D3Element>
-    </>
+
+function TestPage(props){
+    return <Table1Test></Table1Test>
 }
 
 

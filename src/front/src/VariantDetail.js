@@ -293,6 +293,41 @@ function VariantTableContainer(props){
 }
 
 
+function VariantdbSNPTableContainer(props){
+
+    const variantID = props.variantID;
+    const setVariantID = props.setVariantID;
+
+    const variantDetailCounter = props.variantDetailCounter;
+    const setVariantDetailCounter = props.setVariantDetailCounter;
+
+    const [variantdbSNPDetailResult, setVariantdbSNPDetailResult] = useState([]);
+
+    let searchurl = "https://epigenome.wustl.edu/cors/https://api.ncbi.nlm.nih.gov/variation/v0/refsnp/" + variantID.slice(2);
+
+    const queryVariantByID = function (){
+
+        axios.get(searchurl)
+            .then(function (response) {
+                setVariantdbSNPDetailResult(response.data)
+                console.log(response.data)
+                console.log(123)
+            })
+            .catch(function (error) {
+                // console.log(geneName, error);
+            });
+
+    }
+
+    useEffect(() => {
+        queryVariantByID();
+    }, [variantDetailCounter]);
+
+    return <>123</>
+
+}
+
+
 
 export default function VariantDetail(props){
 
@@ -305,9 +340,16 @@ export default function VariantDetail(props){
     const [variantID, setVariantID] = useState(variantIDtmp);
     const [variantDetailCounter, setVariantDetailCounter] = useState(0);
 
+    window.history.pushState(
+        {},
+        '',
+        window.location.protocol + '//' + window.location.host + window.location.pathname + "?variantID=" + variantID
+    )
+
     return <div className={"searchContainer"}>
         <VariantInput variantID={variantID} setVariantID={setVariantID} variantDetailCounter={variantDetailCounter} setVariantDetailCounter={setVariantDetailCounter}></VariantInput>
         <br></br><br></br><br></br>
+        <VariantdbSNPTableContainer variantID={variantID} setVariantID={setVariantID} variantDetailCounter={variantDetailCounter} setVariantDetailCounter={setVariantDetailCounter}></VariantdbSNPTableContainer>
         <VariantTableContainer variantID={variantID} setVariantID={setVariantID} variantDetailCounter={variantDetailCounter} setVariantDetailCounter={setVariantDetailCounter}></VariantTableContainer>
     </div>
 }

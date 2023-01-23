@@ -1,7 +1,8 @@
 
 import ReactDOM from 'react-dom';
 import * as d3 from 'd3';
-import findOptimalTick from "./MyRandomTools";
+import axios from "axios";
+import Plot from 'react-plotly.js';
 
 import React, {useContext, useEffect, useState, useReducer} from "react";
 import {
@@ -10,12 +11,15 @@ import {
     UCSCClinvarURLConstructor,
     pseudoVariationResult,
     searchColorScheme,
-    variationSearch
+    variationSearch,
+
+    oneThousandGenomeVariationSearchURLConstructor, favorVariationSearchURLConstructor
 } from "./API";
 
 import loader from "./images/loader.gif"
 import {useD3} from "./D3Test";
 
+import findOptimalTick from "./MyRandomTools";
 
 
 export function Empty(props){
@@ -134,7 +138,7 @@ function VariationSearchResultInDev1(props){
     let searchResultFiltered = [];
 
     let chromosome = "";
-    let chrMin = 10000000000000000000000000000, chrMax = 0
+    let chrMin = 100000000000000000000000000000, chrMax = 0
     for (let r of searchResult){
         chrMin = Math.min(chrMin, parseInt(r.startPos), parseInt(r.endPos));
         chrMax = Math.max(chrMax, parseInt(r.startPos), parseInt(r.endPos));
@@ -614,7 +618,314 @@ function VariationSearchResultFilter(props) {
 
 }
 
-const genomeLocationRegex = /chr(\d{1,3}|[xym]):(\d*)-(\d*)/i;
+
+function LineGraph(props){
+    let data = props.data;
+
+    data = [
+        [0, 0],
+        [100, 100],
+    ];
+
+    const chartRender = (svg) => {
+        const height = 100;
+        const width = 100;
+        const margin = { top: 10, right: 5, bottom: 10, left:5 };
+
+        const scaleX = d3.scaleLinear()
+            .domain([0, 5])
+            .rangeRound([margin.left, width - margin.right])
+        const scaleY = d3.scaleLinear()
+            .domain([0, 5])
+            .rangeRound([height - margin.bottom, margin.top]);
+        const scaleXPercentage = (x) => {return x.toString() + "%"}
+
+
+
+        svg.selectAll('*').remove();
+        svg.append("g").attr("class", "plot-area")
+
+
+
+        svg.select(".plot-area")
+            .selectAll(".rect")
+            .data(data)
+            .join("rect")
+            .attr("x",      (d) => d[0])
+            .attr("y",      (d) => d[1])
+            .attr("width",  (d) => "10px")
+            .attr("height", (d) => "10px")
+            .attr("fill", (d) => "blue")
+
+
+    }
+
+    const ref = useD3(
+        chartRender,
+        [data]
+    );
+
+    return (
+        <div style={{width: "100%", height: "600px"}}>
+            <svg ref={ref} style={{width: "100%", height: "100%", marginRight: "0px", marginLeft: "0px"}} >
+            </svg>
+        </div>
+    )
+}
+
+function PlotlyTest() {
+    return (
+        <Plot
+            data={[
+                {
+                    x: [1, 2, 3, 4, 5, 6, 7],
+                    y: [2, 6, 3, 2, 8, 1, 5],
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    marker: {color: 'red'},
+                },
+                {
+                    x: [1, 2, 3, 4, 5, 6, 7],
+                    y: [2, 6, 3, 2, 8, 1, 5],
+                    type: 'bar', },
+            ]}
+            useResizeHandler
+            layout={ {autosize: true, title: 'Soemthing'} }
+        />
+    );
+}
+
+
+
+
+function OneThousandGenomeGraphs(props){
+    const d = props.data;
+
+    let template = {
+        x: [],
+        y: [],
+        type: "bar",
+        name: 'other',
+    };
+
+    let graphdata = {};
+    let graphKeys = ["method", "EFFECT", "FEATURE", "IMPACT", "GENE"];
+    let methods = ["clinical", "coding", "coding_rare"];
+    for (let k of graphKeys){
+        graphdata[k] = [];
+        for (let m of methods){
+            let tmp = JSON.parse(JSON.stringify(template));
+            tmp.name = m;
+            graphdata[k].push(tmp)
+        }
+    }
+
+
+    let xmin = 10000000000000000000000 ;
+    let xmax = 0 ;
+
+    for (let d0 of d){
+        let p = d0.POS;
+        xmin = Math.min(p, xmin)
+        xmax = Math.max(p, xmax)
+
+        for (let k of graphKeys){
+            let e = d0[k];
+            let method = d0["method"];
+            let methodi = methods.indexOf(method);
+            if (!graphdata[k][methodi].x.includes(e)){
+                graphdata[k][methodi].x.push(e)
+                graphdata[k][methodi].y.push(0)
+            }
+            graphdata[k][methodi].y[graphdata[k][methodi].x.indexOf(e)] += 1
+        }
+    }
+
+
+    return (
+        <div style={{width: "100%"}}>
+            <h3>1000 Genomes Stat</h3>
+
+            <Plot
+                data={graphdata["method"]}
+                useResizeHandler
+                layout={ {responsive: true, autosize: true, title: 'Method', barmode: 'stack'} }
+            />
+
+            <Plot
+                data={graphdata["EFFECT"]}
+                useResizeHandler
+                layout={ {responsive: true, autosize: true, title: 'Effect', barmode: 'stack'} }
+            />
+
+            <Plot
+                data={graphdata["FEATURE"]}
+                useResizeHandler
+                layout={ {responsive: true, autosize: true, title: 'Feature', barmode: 'stack'} }
+            />
+
+            <Plot
+                data={graphdata["IMPACT"]}
+                useResizeHandler
+                layout={ {responsive: true, autosize: true, title: 'Impact', barmode: 'stack'} }
+            />
+
+            <Plot
+                data={graphdata["GENE"]}
+                useResizeHandler
+                layout={ {responsive: true, autosize: true, title: 'Gene', barmode: 'stack'} }
+            />
+        </div>
+    )
+}
+
+
+
+function FavorGraphs(props){
+    const d = props.data;
+
+    let template = {
+        x: [],
+        y: [],
+        type: "bar",
+        name: 'other',
+    };
+
+    let gencode_cat_graph_data = {
+        x: [],
+        y: [],
+        type: "bar",
+        name: 'other',
+    };
+
+    let histone_example1 = {
+        x: [],
+        type: "histogram",
+        name: 'linsight',
+    };
+
+    let histone_example2 = {
+        x: [],
+        type: "histogram",
+        name: 'linsight',
+    };
+
+    let histone_example3 = {
+        x: [],
+        type: "histogram",
+        name: 'linsight',
+    };
+
+    let histone_example4 = {
+        x: [],
+        type: "histogram",
+        name: 'linsight',
+    };
+    /*
+        chromosome	22
+        position	10510084
+
+        alt_vcf	"C"
+        ref_vcf	"T"
+
+        genecode_comprehensive_category	"intergenic"
+
+        linsight	0.2149255327
+
+        apc_conservation	1.2164893637
+        apc_conservation_v2	1.3479426181
+        apc_epigenetics	0.0541451147
+        apc_epigenetics_active	0.2265586609
+        apc_epigenetics_repressed	0.3103094811
+        apc_epigenetics_transcription	0.3233638927
+        apc_local_nucleotide_diversity	4.2766354969
+        apc_local_nucleotide_diversity_v2	15.0339001522
+        apc_local_nucleotide_diversity_v3	15.1012229481
+        apc_mappability	0.2518803257
+        apc_micro_rna	99.4511969671
+        apc_mutation_density	14.9276816837
+        apc_protein_function_v3	2.9694870303
+        apc_proximity_to_coding	0.1365189915
+        apc_proximity_to_coding_v2	15.1785531454
+        apc_proximity_to_tsstes	0.2950929535
+        apc_transcription_factor	3.1427874631
+        cadd_phred	7.137
+
+        fathmm_xf	0.4052740488
+    * */
+
+
+
+    let xmin = 10000000000000000000000 ;
+    let xmax = 0 ;
+
+    for (let d0 of d){
+        let p = d0.position;
+        xmin = Math.min(p, xmin)
+        xmax = Math.max(p, xmax)
+
+
+        let e = d0.genecode_comprehensive_category;
+        if (!gencode_cat_graph_data.x.includes(e)){
+            gencode_cat_graph_data.x.push(e)
+            gencode_cat_graph_data.y.push(0)
+        }
+        gencode_cat_graph_data.y[gencode_cat_graph_data.x.indexOf(e)] += 1
+
+
+        histone_example1.x.push(d0.linsight)
+        histone_example2.x.push(d0.apc_conservation_v2)
+        histone_example3.x.push(d0.apc_mappability)
+        histone_example4.x.push(d0.cadd_phred)
+
+
+    }
+
+
+
+    return (
+        <div style={{width: "100%"}}>
+            <h3>Favor Stat</h3>
+
+            <Plot
+                data={[gencode_cat_graph_data]}
+                useResizeHandler
+                layout={ {autosize: true, title: 'Genecode Comprehensive Category', barmode: 'stack'} }
+            />
+
+            <Plot
+                data={[histone_example1]}
+                useResizeHandler
+                layout={ {autosize: true, title: 'LinSight', barmode: 'stack'} }
+            />
+
+            <Plot
+                data={[histone_example2]}
+                useResizeHandler
+                layout={ {autosize: true, title: 'APC Conservation V2', barmode: 'stack'} }
+            />
+
+            <Plot
+                data={[histone_example3]}
+                useResizeHandler
+                layout={ {autosize: true, title: 'APC Mappability', barmode: 'stack'} }
+            />
+
+            <Plot
+                data={[histone_example4]}
+                useResizeHandler
+                layout={ {autosize: true, title: 'CADD phred', barmode: 'stack'} }
+            />
+
+        </div>
+    )
+}
+
+
+
+
+
+const genomeLocationRegex = /chr(\d{1,3}|[xymXYM]):(\d*)-(\d*)/i;
 export function LocationSearchResult(props){
 
     let genomicLocation = props.genomicLocation;
@@ -676,6 +987,321 @@ export function LocationSearchResult(props){
     </>
 
 }
+
+
+function CombinedVariationSearchResultTable(props){
+
+    const [pageNum, setPageNum] = useState(1);
+    const [rowPerPage, setRowPerPage] = useState(20);
+    let maxPageNum = 1;
+
+
+    let oneKGenomeData=props.oneKGenomeData;
+    let favorData=props.favorData;
+
+    let tableData = [];
+
+
+    let tmp = 0;
+    let posrange = 1000;
+    for (let d of oneKGenomeData){
+        let tmp1 = "";
+        let tmp2 = "";
+
+        tmp1 = d.CHROM + ":";
+        if (parseInt(d.POS) > posrange){
+            tmp1 += (parseInt(d.POS)-posrange).toString()
+        } else {
+            tmp1 += "1"
+        }
+        tmp1 += "-" + (parseInt(d.POS)+posrange).toString()
+
+        tmp2 = "http://epigenomegateway.wustl.edu/browser/?genome=hg38&position=" + tmp1
+        let pos = <a href={tmp2} target={"_blank"}>{d.CHROM + ":" + d.POS.toString()}</a>
+
+        let vtype = "X";
+
+        let conversion = "";
+        // let conversion = d.REF + "/" + d.ALT;
+        tmp1 = [d.REF, " / ", d.ALT]
+        conversion = <>
+            {tmp1.map((e) => {
+                if (e.length > 10){
+                    return <span title={e}>{e.slice(0, 10) + "..."}</span>
+                } else {
+                    return e
+                }
+            })}
+        </>
+
+
+
+        let dbsnpid = d.variant_ID;
+        let desc = d.EFFECT;
+        desc = desc.replaceAll("&", " & ")
+        let source = "1000 Genomes"
+
+
+        if (dbsnpid.startsWith("rs")){
+            tmp1 = "https://catalog-dev.igvf.org/?variantID=" + dbsnpid
+            dbsnpid = <a href={tmp1} target={"_blank"}>{dbsnpid}</a>
+        }
+
+
+
+        tableData.push([pos, vtype, conversion, dbsnpid, desc, source])
+
+        tmp += 1;
+        if (tmp < 20){
+            // console.log(d);
+        }
+    }
+
+    for (let d of favorData){
+        let tmp1 = "";
+        let tmp2 = "";
+
+
+
+        tmp1 = "chr" + d.chromosome + ":";
+        if (parseInt(d.position) > posrange){
+            tmp1 += (parseInt(d.position)-posrange).toString()
+        } else {
+            tmp1 += "1"
+        }
+        tmp1 += "-" + (parseInt(d.position)+posrange).toString()
+
+        tmp2 = "http://epigenomegateway.wustl.edu/browser/?genome=hg38&position=" + tmp1
+        let pos = <a href={tmp2} target={"_blank"}>{"chr" + d.chromosome + ":" + d.position.toString()}</a>
+
+        let vtype = "X";
+
+        let conversion = "";
+        // let conversion = d.REF + "/" + d.ALT;
+        tmp1 = [d.ref_vcf, " / ", d.alt_vcf]
+        conversion = <>
+            {tmp1.map((e) => {
+                if (e.length > 10){
+                    return <span title={e}>{e.slice(0, 10) + "..."}</span>
+                } else {
+                    return e
+                }
+            })}
+        </>
+
+
+
+        let dbsnpid = ".";
+        let desc = d.genecode_comprehensive_info;
+        desc = d.genecode_comprehensive_category
+        let source = "Favor"
+
+
+        tableData.push([pos, vtype, conversion, dbsnpid, desc, source])
+
+        tmp += 1;
+        if (tmp < 20){
+            // console.log(d);
+        }
+    }
+
+
+    let sliceStart = (pageNum-1)*rowPerPage;
+    let sliceEnd = sliceStart + rowPerPage;
+    if (sliceEnd > tableData.length){
+        sliceEnd = tableData.length
+    }
+
+    let selectedTableData = tableData.slice(sliceStart, sliceEnd);
+
+
+
+    maxPageNum = Math.ceil(tableData.length / rowPerPage);
+
+    let prefixTriDot = false;
+    let suffixTriDot = false;
+    let pageNumbers = [];
+    if (maxPageNum <= 5){
+        for (let i=1; i<=maxPageNum; i++){
+            pageNumbers.push(i)
+        }
+    }
+    else {
+        if (pageNum > 3){
+            prefixTriDot = true;
+        }
+
+        if (maxPageNum - pageNum > 3){
+            suffixTriDot = true;
+        }
+
+        if (pageNum <= 3){
+            for (let i=1; i<=5; i++){
+                pageNumbers.push(i)
+            }
+        }
+
+        else if (maxPageNum - pageNum < 3){
+            for (let i=maxPageNum-5; i<=maxPageNum; i++){
+                pageNumbers.push(i)
+            }
+        }
+
+        else {
+            for (let i=pageNum-2; i<=pageNum+2; i++){
+                pageNumbers.push(i)
+            }
+        }
+
+
+    }
+
+
+    return <>
+
+        <table className={"table1"}>
+            <caption>Result Table</caption>
+            <tr>
+                <th>Position</th>
+                <th>Variation Type</th>
+                <th>Conversion</th>
+                <th>dbSNP ID</th>
+                <th>Description</th>
+                <th>Source</th>
+            </tr>
+            {
+                selectedTableData.map((row) => {
+                    return <tr>{
+                        row.map((e) => {
+                            return <td>{e}</td>
+                        })
+                    }</tr>
+                })
+            }
+
+        </table>
+
+        <ul className={"table1pagebuttons"}>
+            <li onClick={() => {setPageNum(1)} }>{"<<"}</li>
+            <li onClick={() => pageNum>1 ? setPageNum(pageNum-1) : "" }>{"<"}</li>
+            {prefixTriDot ? "...": ""}
+            {
+                pageNumbers.map((i) => {
+                    if (i == pageNum){
+                        return <li onClick={() => {setPageNum(i)} }  className={"table1pagebuttonsselected"}>{i}</li>
+                    }
+                    return <li onClick={() => {setPageNum(i)}} >{i}</li>
+                })
+            }
+            {suffixTriDot ? "...": ""}
+            <li onClick={() => pageNum<maxPageNum ? setPageNum(pageNum+1) : ""  } >{">"}</li>
+            <li onClick={() => {setPageNum(maxPageNum)} }>{">>"}</li>
+        </ul>
+    </>
+}
+
+
+
+
+
+
+export function LocationSearchResultContainer(props){
+
+    let genomicLocation = props.genomicLocation;
+    let genomeAssembly = props.genomeAssembly;
+
+    let searchCount = props.searchCount;
+
+    const [searchResult, setSearchResult] = useState([]);
+    const [oneKGenomeData, setOneKGenomeData] = useState([]);
+    const [favorData, setFavorData] = useState([]);
+
+    const [dataSourceFilter, setDataSourceFilter] = useState({
+        "1000Genome": true,
+        "ClinVar": true
+    });
+    const [variationTypeFilter, setVariationTypeFilter] = useState({
+        "SNV": true,
+        "SNP": true,
+        "insertion": true,
+        "deletion": true,
+        "other": true,
+    });
+
+    let locReResult = genomeLocationRegex.exec(genomicLocation);
+    // TODO check isNull to prevent invalid result
+    console.log(genomicLocation, locReResult)
+    let chr = "chr"+locReResult[1];
+    let start = locReResult[2];
+    let end = locReResult[3];
+
+
+    const queryOneKGenomeByRegion = function (){
+        let rurl = oneThousandGenomeVariationSearchURLConstructor(chr, start, end);
+        axios.get(rurl)
+            .then(function (response) {
+                setOneKGenomeData(response.data)
+            })
+            .catch(function (error) {
+                // console.log(geneName, error);
+            });
+    }
+
+    const queryFavorByRegion = function (){
+        let rurl = favorVariationSearchURLConstructor(chr, start, end);
+        axios.get(rurl)
+            .then(function (response) {
+                setFavorData(response.data)
+            })
+            .catch(function (error) {
+                // console.log(geneName, error);
+            });
+    }
+
+
+    useEffect(() => {
+        queryOneKGenomeByRegion();
+        queryFavorByRegion();
+    }, [searchCount]);
+
+
+
+
+    return <>
+
+        <div className={"resultContainer"}>
+            <VariationSearchResult
+                genomeAssembly={genomeAssembly}
+                searchResult={searchResult}
+                dataSourceFilter={dataSourceFilter}
+                variationTypeFilter={variationTypeFilter}
+            />
+        </div>
+
+        <div className={"resultContainer"}>
+            <CombinedVariationSearchResultTable oneKGenomeData={oneKGenomeData} favorData={favorData}/>
+        </div>
+
+        <div className={"resultContainer"}>
+            <OneThousandGenomeGraphs data={oneKGenomeData}/>
+        </div>
+
+        <div className={"resultContainer"}>
+            <FavorGraphs data={favorData}/>
+        </div>
+
+
+
+
+        <br></br><br></br><br></br><br></br><br></br>
+
+
+    </>
+
+}
+
+
+
 
 
 

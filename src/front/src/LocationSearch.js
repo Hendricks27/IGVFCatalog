@@ -2,13 +2,28 @@
 
 import React, {useEffect, useState} from "react";
 import {UCSCClinvarURLConstructor, availableGenomeAndDataset, variationSearch} from "./API";
-import {Empty, GenomeAssemblySelection, LocationSearchResult} from "./Module";
+import {
+    Empty,
+    GenomeAssemblySelection,
+    LocationSearchResult,
+    LocationSearchResultContainer,
+    LocationSearchStatGraph
+} from "./Module";
 
 
 export function LocationSearch(props){
 
-    const [searchCount, setSearchCount] = useState(0);
-    const [genomicLocation, setGenomicLocation] = useState("chr4:101200000-102500000");
+    const urlParams = props.urlParams;
+    let locationtmp = "chr22:1-100000000";
+    let searchCountTmp = 0;
+    if (urlParams.get('location') != null){
+        locationtmp = urlParams.get('location')
+        searchCountTmp = 1;
+    }
+
+
+    const [searchCount, setSearchCount] = useState(searchCountTmp);
+    const [genomicLocation, setGenomicLocation] = useState(locationtmp);
 
     const [availableDatasetByGenomeAssembly, setAvailableDatasetByGenomeAssembly] = useState(availableGenomeAndDataset);
     const [genomeAssembly, setGenomeAssembly] = useState("hg38");
@@ -48,9 +63,9 @@ export function LocationSearch(props){
 
             </div>
 
-            <div className={"resultContainer"}>
-                {searchCount > 0 ? <LocationSearchResult genomeAssembly={genomeAssembly} genomicLocation={genomicLocation} searchCount={searchCount} /> : <Empty /> }
-            </div>
+            {searchCount > 0 ? <LocationSearchResultContainer genomeAssembly={genomeAssembly} genomicLocation={genomicLocation} searchCount={searchCount} /> : <Empty /> }
+
+
         </div>
     )
 }

@@ -2,7 +2,7 @@
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import { geneNameSearchURLConstructor, geneLocationSearchURLConstructor, availableGenomeAndDataset } from "./API";
-import { Empty, GenomeAssemblySelection, LocationSearchResult } from "./Module";
+import {Empty, GenomeAssemblySelection, LocationSearchResult, LocationSearchResultContainer} from "./Module";
 
 import loader from "./images/loader.gif"
 
@@ -69,6 +69,9 @@ function ListGenePosition(props){
     const genomicLocation = props.genomicLocation;
     const setGenomicLocation = props.setGenomicLocation;
 
+    const searchCount = props.searchCount;
+    const setSearchCount = props.setSearchCount;
+
     const [genePositions, setGenePositions] = useState([]);
 
     const queryGeneLocation = function (){
@@ -76,22 +79,6 @@ function ListGenePosition(props){
 
             axios.get(geneLocationSearchURLConstructor(genomeAssembly, geneName))
                 .then(function (response) {
-                    // console.log(genomeAssembly, geneName, response.data);
-                    /* each in list looks like:
-                    chrom: "chr17"
-                    cdsEnd: 43106526
-                    cdsStart: 43045677
-                    collection: "refGene"
-                    description: "Gene Type: protein_coding Transcript Type: protein_coding Additional Info: Homo sapiens breast cancer 1 (BRCA1), transcript variant 3, mRNA. (from RefSeq NM_007297)"
-                    exonEnds: "43045802,43047703,43049194,43051117,43057135,43063373,43063951,43067695,43071238,43074521,43076614,43082575,43091032,43094860,43095922,43097289,43099880,43104261,43104956,43106533,43124115,43125451"
-                    exonStarts: "43044294,43047642,43049120,43051062,43057051,43063332,43063873,43067607,43070927,43074330,43076487,43082403,43090943,43091434,43095845,43097243,43099774,43104121,43104867,43106455,43124016,43125276"
-                    id: "NM_007297"
-                    name: "BRCA1"
-                    strand: "-"
-                    transcriptionClass: "coding"
-                    txEnd: 43125451
-                    txStart: 43044294
-                    * */
                     setGenePositions(response.data)
                 })
                 .catch(function (error) {
@@ -106,16 +93,6 @@ function ListGenePosition(props){
     useEffect(() => {
         queryGeneLocation();
     }, [geneName]);
-
-    const genePositionListOLD = (
-        <li className={"geneNameOptions"}>
-            {genePositions.map((gp) => <ul onClick={ function (e){
-                const loc = gp.chrom +":"+ gp.txStart +"-"+ gp.txEnd;
-                setGenomicLocation(loc);
-                setGenePositions([]);
-            }}  className={"geneNameOption"}>{gp.chrom +":"+ gp.txStart +"-"+ gp.txEnd}</ul>)}
-        </li>
-    )
 
     let txMin = 1000000000000000000000000
     let txMax = 0
@@ -259,10 +236,7 @@ function ListGenePosition(props){
                                     fill={svgColor}
                                 />
                             })
-                        }
-                        {
-                            directionSVG
-                        }
+                        }{directionSVG}
                         }
                     </g>
                 </svg>
@@ -272,6 +246,7 @@ function ListGenePosition(props){
                     const loc = gp.chrom + ":" + gp.txStart + "-" + gp.txEnd;
                     setGenomicLocation(loc);
                     setGenePositions([]);
+                    setSearchCount(searchCount + 1)
                 }} className={"genePositionRow"}>
                     <td>{source}<br />{coord}</td>
                     <td>{geneRegionSVG}</td>
@@ -294,11 +269,15 @@ export function GeneSearch(props){
     const [geneName, setGeneName] = useState("");
     const [geneNameSelected, setGeneNameSelected] = useState(false);
 
-    const [genomicLocation, setGenomicLocation] = useState("");
+    const [genomicLocation, setGenomicLocation] = useState("chr1:1-10");
+    const [searchCount, setSearchCount] = useState(0);
+
 
     const [availableDatasetByGenomeAssembly, setAvailableDatasetByGenomeAssembly] = useState(availableGenomeAndDataset);
     const [genomeAssembly, setGenomeAssembly] = useState("hg38");
     const [selectedDataset, setSelectedDataset] = useState({});
+
+
 
     return (
         <div>
@@ -315,7 +294,6 @@ export function GeneSearch(props){
                     selectedDataset={selectedDataset}
                     setSelectedDataset={setSelectedDataset}
                 /><br />
-
                 <form>
                     <label>Gene: </label>
                     <input
@@ -340,12 +318,15 @@ export function GeneSearch(props){
                     setGeneName={setGeneName}
                     genomicLocation={genomicLocation}
                     setGenomicLocation={setGenomicLocation}
+                    searchCount={searchCount}
+                    setSearchCount={setSearchCount}
                 />
 
             </div>
-            <div className={"resultContainer"}>
-                {genomicLocation === "" ? <></> : <LocationSearchResult genomeAssembly={genomeAssembly} genomicLocation={genomicLocation} /> }
-            </div>
+
+            <div>123</div>
+            {searchCount > 0 ? <LocationSearchResultContainer genomeAssembly={genomeAssembly} genomicLocation={genomicLocation} searchCount={searchCount} /> : <Empty /> }
+
 
         </div>
     )

@@ -168,7 +168,25 @@ export function variationSearch(genomeAssemly, chrom, posStart, posEnd){
 
 
 
+export function oneThousandGenomeVariationSearchURLConstructor(chrom, posStart, posEnd) {
 
+    let res = "https://8z6tnsj4te.execute-api.us-east-2.amazonaws.com/dev/1000Genome/region/?";
+    res += "chr=" + chrom.toString() + "&";
+    res += "start_pos=" + posStart.toString() + "&";
+    res += "end_pos=" + posEnd.toString() + "&";
+
+    return res
+}
+
+export function favorVariationSearchURLConstructor(chrom, posStart, posEnd) {
+
+    let res = "https://8z6tnsj4te.execute-api.us-east-2.amazonaws.com/dev/FAVOR/region/?";
+    res += "chr=" + chrom.toString() + "&";
+    res += "start_pos=" + posStart.toString() + "&";
+    res += "end_pos=" + posEnd.toString() + "&";
+
+    return res
+}
 
 
 
