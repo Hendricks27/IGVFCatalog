@@ -14,12 +14,18 @@ import {
 export function LocationSearch(props){
 
     const urlParams = props.urlParams;
-    let locationtmp = "chr22:1-100000000";
+    let locationtmp = "chr1:167050000-167060000";
     let searchCountTmp = 0;
     if (urlParams.get('location') != null){
         locationtmp = urlParams.get('location')
         searchCountTmp = 1;
     }
+
+    window.history.pushState(
+        {},
+        '',
+        window.location.protocol + '//' + window.location.host + window.location.pathname + "?location"
+    )
 
 
     const [searchCount, setSearchCount] = useState(searchCountTmp);
@@ -29,6 +35,11 @@ export function LocationSearch(props){
     const [genomeAssembly, setGenomeAssembly] = useState("hg38");
     const [selectedDataset, setSelectedDataset] = useState({});
 
+    window.history.pushState(
+        {},
+        '',
+        window.location.protocol + '//' + window.location.host + window.location.pathname + "?location="+genomicLocation
+    )
 
     const handleSubmit = (event) => {
         event.preventDefault();

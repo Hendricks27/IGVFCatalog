@@ -10,6 +10,9 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --font-family-sans-serif: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+  --font-family-monospace: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
 }
 
 
@@ -25,24 +28,27 @@ table {
 
 .navbar {
   display: inline-block;
-  background-color: #333;
+  background-color: rgb(0, 0, 0);
   width: 100%;
+
 }
 
 .navbarElement {
   list-style-type: none;
-  margin: 0;
+  margin: 10px;
   padding: 0;
-  width: 16%;
+  width: 14%;
+  height: 50px;
   overflow: hidden;
-  background-color: #333;
+  background-color: rgb(0, 0, 0);
   display: inline-block;
+  cursor: pointer;
 
-  height: 60px;
+  transition: 200ms ease-out 100ms
 }
 
 .navbarElementHome {
-  background-color: #1e90ff;
+  background-color: rgb(69, 117, 134);
   height: 100%;
 }
 
@@ -52,12 +58,22 @@ table {
   text-align: center;
   text-decoration: none;
   height: 100%;
-  line-height: 60px
+  line-height: 50px;
+
+}
+
+.headerText {
+  font-family: lato,sans-serif;
+  font-weight: 600;
+  letter-spacing: 1.1px;
+  font-size: 1.2rem!important;
+  text-transform: capitalize;
 }
 
 
 .navbarElement:hover:not(.active) {
-  background-color: #111;
+  background-color: #333;
+  border-radius: 9px;
 }
 
 
@@ -65,7 +81,7 @@ table {
 
 .footer {
   display: inline-block;
-  background-color: #333;
+  background-color: rgb(0, 0, 0);
   width: 100%;
   padding: 10px;
 
@@ -104,14 +120,15 @@ table {
 
 
 
-
-
 .card {
   border: 2px solid lightgrey;
   display: inline-block;
   padding: 10px;
   margin: 10px;
   border-radius: 10px;
+  cursor: pointer;
+
+  transition: 200ms ease-out 100ms
 }
 
 .geneNameOptionsContainer {
@@ -160,7 +177,7 @@ table {
 }
 
 .pageTitle {
-  color: #1e90ff;
+  color: rgb(69, 117, 134);
 }
 
 

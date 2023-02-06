@@ -1,6 +1,7 @@
 
 import axios from "axios";
 import React, { useState, useContext, useEffect } from 'react';
+import * as pako from "pako";
 
 export const availableGenomeAndDataset = {
     "hg19": [],
@@ -170,7 +171,7 @@ export function variationSearch(genomeAssemly, chrom, posStart, posEnd){
 
 export function oneThousandGenomeVariationSearchURLConstructor(chrom, posStart, posEnd) {
 
-    let res = "https://8z6tnsj4te.execute-api.us-east-2.amazonaws.com/dev/1000Genome/region/?";
+    let res = "https://8z6tnsj4te.execute-api.us-east-2.amazonaws.com/dev/1000genome/region/?";
     res += "chr=" + chrom.toString() + "&";
     res += "start_pos=" + posStart.toString() + "&";
     res += "end_pos=" + posEnd.toString() + "&";
@@ -186,6 +187,15 @@ export function favorVariationSearchURLConstructor(chrom, posStart, posEnd) {
     res += "end_pos=" + posEnd.toString() + "&";
 
     return res
+}
+
+
+export function AWSLambdaFunctionBase64StringToArray(b64s){
+
+    const strData = atob(b64s);
+    const charData = strData.split("").map((x) => { return x.charCodeAt(0); });
+    const binData = new Uint8Array(charData);
+    return JSON.parse(pako.inflate(binData, { to: "string" }));
 }
 
 

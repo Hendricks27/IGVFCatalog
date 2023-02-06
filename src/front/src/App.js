@@ -11,12 +11,16 @@ import VariantDetail from "./VariantDetail";
 import Preset from "./Preset";
 
 import './App.css';
+import IGVFLogo from "./images/igvf.png";
 import CardLogo from "./images/loader.gif";
 import GeneSearchLogo from "./images/GeneSearchCard.jpeg";
 import LocationSearchLogo from "./images/LocationSearchCard.jpeg";
 
+import {GitHubSVG, LocationSVG, AboutSVG, VariantSVG, GeneSVG} from "./SVGLogo";
+
+
 import D3Element from "./D3Test";
-import {Table1Test} from "./ReusableElements"
+import {Table1ComplicateTest, Table1Test} from "./ReusableElements"
 import {Tab} from "@mui/material";
 
 const pageTypeContext = React.createContext(null);
@@ -34,18 +38,20 @@ const pageTypeContext = React.createContext(null);
 function Header(props){
 
     const { pageType, setPageType } = useContext(pageTypeContext);
+    // <a className={"navbarElementHome navbarElementA"}>IGVF Catalog</a>
 
     return <li className={"navbar"}>
         <ul
             className={"navbarElement"}
             onClick={() => setPageType("home")}>
-        <a className={"navbarElementHome navbarElementA"}>IGVF Catalog</a>
+            <img src={IGVFLogo} alt={"123"} width={138} ></img>
+
         </ul>
-            <ul className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("geneSearch")}} >Gene Search</a></ul>
-            <ul className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("locSearch")}} >Location Search</a></ul>
-            <ul className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("variantID")}} >Variant</a></ul>
-            <ul className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("about")}} >About</a></ul>
-            <ul className={"navbarElement"}><a className={"navbarElementA"} href={"https://github.com/Hendricks27/IGVFCatalog/issues"} target={"_blank"}>Contact</a></ul>
+            <ul className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("geneSearch")}} ><GeneSVG></GeneSVG> <span className={"headerText"}>Gene Search</span></a></ul>
+            <ul className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("locSearch")}} ><LocationSVG></LocationSVG> <span className={"headerText"}>Location Search</span></a></ul>
+            <ul className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("variantID")}} ><VariantSVG></VariantSVG> <span className={"headerText"}>Variant</span></a></ul>
+            <ul className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("about")}} ><AboutSVG></AboutSVG> <span className={"headerText"}>About</span></a></ul>
+            <ul className={"navbarElement"}><a className={"navbarElementA"} href={"https://github.com/Hendricks27/IGVFCatalog/issues"} target={"_blank"}><GitHubSVG></GitHubSVG> <span className={"headerText"}>Contact</span></a></ul>
     </li>
 }
 
@@ -82,6 +88,12 @@ function Card(props){
 
 function HomePageContent(props){
 
+    window.history.pushState(
+        {},
+        '',
+        window.location.protocol + '//' + window.location.host + window.location.pathname + "?home"
+    )
+
     const cardsData = [];
     cardsData.push({
         "title": "Gene Search",
@@ -99,13 +111,13 @@ function HomePageContent(props){
         "title": "Variant Search",
         "pageType": "variantID",
         "description": "Search variant by ID",
-        "imageURL": CardLogo
+        "imageURL": GeneSearchLogo
     })
     cardsData.push({
         "title": "Presets",
         "pageType": "preset",
         "description": "Preset search result for viewing",
-        "imageURL": GeneSearchLogo
+        "imageURL": LocationSearchLogo
     })
 
 
@@ -116,8 +128,15 @@ function HomePageContent(props){
 
 
 function About(props){
+
+    window.history.pushState(
+        {},
+        '',
+        window.location.protocol + '//' + window.location.host + window.location.pathname + "?about"
+    )
+
     return <>
-        Nothing here...
+         Under construction...
     </>
 }
 
@@ -141,6 +160,15 @@ function IGVFMainPage(props) {
     }
     else if (searchParams.get('location') != null){
         pttmp ="locSearch";
+    }
+    else if (searchParams.get('preset') != null){
+        pttmp ="preset";
+    }
+    else if (searchParams.get('home') != null){
+        pttmp ="home";
+    }
+    else if (searchParams.get('about') != null){
+        pttmp ="about";
     }
     else if (searchParams.get('test') != null){
         pttmp ="test";
@@ -172,19 +200,19 @@ function IGVFMainPage(props) {
                                 ele = <VariantDetail urlParams={searchParams}/>
                                 break;
                             case "about":
-                                ele = <About />
+                                ele = <About urlParams={searchParams} />
                                 break;
                             case "preset":
-                                ele = <Preset />
+                                ele = <Preset urlParams={searchParams} />
                                 break;
                             case "placeholder":
                                 ele = <Placeholder />
                                 break;
                             case "test":
-                                ele = <TestPage />
+                                ele = <TestPage urlParams={searchParams} />
                                 break;
                             default:
-                                ele = <HomePageContent />
+                                ele = <HomePageContent urlParams={searchParams}/>
 
                         }
                         return ele
@@ -202,7 +230,14 @@ function IGVFMainPage(props) {
 
 
 function TestPage(props){
-    return <Table1Test></Table1Test>
+
+    window.history.pushState(
+        {},
+        '',
+        window.location.protocol + '//' + window.location.host + window.location.pathname + "?test"
+    )
+
+    return <Table1ComplicateTest></Table1ComplicateTest>
 }
 
 

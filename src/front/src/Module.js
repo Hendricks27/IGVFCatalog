@@ -4,6 +4,8 @@ import * as d3 from 'd3';
 import axios from "axios";
 import Plot from 'react-plotly.js';
 
+import * as pako from "pako";
+
 import React, {useContext, useEffect, useState, useReducer} from "react";
 import {
     geneNameSearchURLConstructor,
@@ -13,7 +15,9 @@ import {
     searchColorScheme,
     variationSearch,
 
-    oneThousandGenomeVariationSearchURLConstructor, favorVariationSearchURLConstructor
+    oneThousandGenomeVariationSearchURLConstructor,
+    favorVariationSearchURLConstructor,
+    AWSLambdaFunctionBase64StringToArray
 } from "./API";
 
 import loader from "./images/loader.gif"
@@ -673,28 +677,6 @@ function LineGraph(props){
     )
 }
 
-function PlotlyTest() {
-    return (
-        <Plot
-            data={[
-                {
-                    x: [1, 2, 3, 4, 5, 6, 7],
-                    y: [2, 6, 3, 2, 8, 1, 5],
-                    type: 'scatter',
-                    mode: 'lines+markers',
-                    marker: {color: 'red'},
-                },
-                {
-                    x: [1, 2, 3, 4, 5, 6, 7],
-                    y: [2, 6, 3, 2, 8, 1, 5],
-                    type: 'bar', },
-            ]}
-            useResizeHandler
-            layout={ {autosize: true, title: 'Soemthing'} }
-        />
-    );
-}
-
 
 
 
@@ -786,8 +768,7 @@ function FavorGraphs(props){
 
     let template = {
         x: [],
-        y: [],
-        type: "bar",
+        type: "histogram",
         name: 'other',
     };
 
@@ -821,6 +802,36 @@ function FavorGraphs(props){
         type: "histogram",
         name: 'linsight',
     };
+
+
+
+    let graphdata = {};
+    let graphKeys = ["genecode_comprehensive_category", "linsight", "apc_conservation_v2", "apc_mappability", "cadd_phred"];
+    let gccategory = ["intergenic", "upstream", "downstream", "upstream;downstream", "ncRNA_intronic", "ncRNA_exonic", "ncRNA_splicing"];
+    for (let k of graphKeys){
+        graphdata[k] = [];
+
+        for (let gcc of gccategory){
+            let tmp = JSON.parse(JSON.stringify(template));
+            tmp.name = gcc;
+
+
+            if (k === "genecode_comprehensive_category"){
+                tmp = {
+                    x: [],
+                    y: [],
+                    type: "bar",
+                    name: gcc
+                }
+            }
+
+            graphdata[k].push(tmp)
+        }
+    }
+
+
+
+
     /*
         chromosome	22
         position	10510084
@@ -866,21 +877,40 @@ function FavorGraphs(props){
 
 
         let e = d0.genecode_comprehensive_category;
-        if (!gencode_cat_graph_data.x.includes(e)){
-            gencode_cat_graph_data.x.push(e)
-            gencode_cat_graph_data.y.push(0)
-        }
-        gencode_cat_graph_data.y[gencode_cat_graph_data.x.indexOf(e)] += 1
-
-
+        /*
         histone_example1.x.push(d0.linsight)
         histone_example2.x.push(d0.apc_conservation_v2)
         histone_example3.x.push(d0.apc_mappability)
         histone_example4.x.push(d0.cadd_phred)
+        */
+
+        for (let k of graphKeys){
+            let e = d0[k];
+            let gccat = d0["genecode_comprehensive_category"];
+            let gccati = gccategory.indexOf(gccat);
+
+            if (k == "genecode_comprehensive_category"){
+                if (!graphdata[k][gccati].x.includes(e)){
+                    graphdata[k][gccati].x.push(e)
+                    graphdata[k][gccati].y.push(0)
+
+                    console.log(k, e)
+                }
+                graphdata[k][gccati].y[graphdata[k][gccati].x.indexOf(e)] += 1
+
+            }
+            else {
+                graphdata[k][gccati].x.push(e)
+            }
+
+        }
+
+
+
 
 
     }
-
+    console.log(graphdata)
 
 
     return (
@@ -888,31 +918,32 @@ function FavorGraphs(props){
             <h3>Favor Stat</h3>
 
             <Plot
-                data={[gencode_cat_graph_data]}
+                data={graphdata["genecode_comprehensive_category"]}
                 useResizeHandler
-                layout={ {autosize: true, title: 'Genecode Comprehensive Category', barmode: 'stack'} }
+                layout={ {responsive: true, autosize: true, title: 'Genecode Comprehensive Category', barmode: 'overlay'} }
             />
 
+
             <Plot
-                data={[histone_example1]}
+                data={graphdata["linsight"]}
                 useResizeHandler
                 layout={ {autosize: true, title: 'LinSight', barmode: 'stack'} }
             />
 
             <Plot
-                data={[histone_example2]}
+                data={graphdata["apc_conservation_v2"]}
                 useResizeHandler
                 layout={ {autosize: true, title: 'APC Conservation V2', barmode: 'stack'} }
             />
 
             <Plot
-                data={[histone_example3]}
+                data={graphdata["apc_mappability"]}
                 useResizeHandler
                 layout={ {autosize: true, title: 'APC Mappability', barmode: 'stack'} }
             />
 
             <Plot
-                data={[histone_example4]}
+                data={graphdata["cadd_phred"]}
                 useResizeHandler
                 layout={ {autosize: true, title: 'CADD phred', barmode: 'stack'} }
             />
@@ -1043,7 +1074,7 @@ function CombinedVariationSearchResultTable(props){
 
 
         if (dbsnpid.startsWith("rs")){
-            tmp1 = "https://catalog-dev.igvf.org/?variantID=" + dbsnpid
+            tmp1 = "./?variantID=" + dbsnpid
             dbsnpid = <a href={tmp1} target={"_blank"}>{dbsnpid}</a>
         }
 
@@ -1240,7 +1271,7 @@ export function LocationSearchResultContainer(props){
         let rurl = oneThousandGenomeVariationSearchURLConstructor(chr, start, end);
         axios.get(rurl)
             .then(function (response) {
-                setOneKGenomeData(response.data)
+                setOneKGenomeData(AWSLambdaFunctionBase64StringToArray(response.data.data))
             })
             .catch(function (error) {
                 // console.log(geneName, error);
@@ -1251,7 +1282,7 @@ export function LocationSearchResultContainer(props){
         let rurl = favorVariationSearchURLConstructor(chr, start, end);
         axios.get(rurl)
             .then(function (response) {
-                setFavorData(response.data)
+                setFavorData(AWSLambdaFunctionBase64StringToArray(response.data.data))
             })
             .catch(function (error) {
                 // console.log(geneName, error);

@@ -266,6 +266,12 @@ function ListGenePosition(props){
 
 export function GeneSearch(props){
 
+    window.history.pushState(
+        {},
+        '',
+        window.location.protocol + '//' + window.location.host + window.location.pathname + "?gene"
+    )
+
     const [geneName, setGeneName] = useState("");
     const [geneNameSelected, setGeneNameSelected] = useState(false);
 
