@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import {tab} from "@testing-library/user-event/dist/tab";
+import LoadingImg from "./images/loader.gif"
 
 
 
@@ -268,8 +269,32 @@ export function Table1ComplicateTest(){
             tableData={tableData}
             option={option}
         ></Table1>
+        <LoadingContainer width={120} ></LoadingContainer>
         <br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br>
     </div>
+}
+
+
+export function LoadingContainer(props){
+
+    let width = 100;
+    let height = 100;
+
+    if (props.width !== undefined){
+        width = props.width;
+        height = props.width;
+    }
+
+    if (props.height !== undefined){
+        height = props.height;
+    }
+
+    const res = <>
+        <img src={LoadingImg} alt={"loading"} width={width} height={height}></img>
+    </>
+
+    return res
+
 }
 
 

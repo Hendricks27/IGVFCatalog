@@ -48,7 +48,7 @@ export function LocationSearch(props){
     return (
         <div>
             <h2 className={"pageTitle"}>Location Search</h2>
-            <div  className={"searchContainer"}>
+            <div  className={"contentContainerBorder"}>
                 <p>Seach variation by genomic regions: </p>
 
                 <div>

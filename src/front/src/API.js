@@ -199,6 +199,12 @@ export function AWSLambdaFunctionBase64StringToArray(b64s){
 }
 
 
+export function GeneQueryByRegion(genomeAssemly, chrom, posStart, posEnd){
+    let rurl = "https://lambda.epigenomegateway.org/v2/"+genomeAssemly+"/genes/refGene/queryRegion?chr="+chrom+"&start="+posStart.toString()+"&end="+posEnd.toString()+""
+
+    return rurl
+}
+
 
 
 

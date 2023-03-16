@@ -289,7 +289,7 @@ export function GeneSearch(props){
         <div>
             <h2 className={"pageTitle"}>Gene Search</h2>
 
-            <div className={"searchContainer"}>
+            <div className={"contentContainerBorder"}>
                 <p>Seach variation by gene name: </p>
 
                 <GenomeAssemblySelection

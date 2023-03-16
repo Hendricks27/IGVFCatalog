@@ -3,6 +3,8 @@
 import React, { useState, useContext, useEffect } from 'react';
 import {BrowserRouter, Routes, Route, useSearchParams, useLocation} from "react-router-dom";
 
+import bootstrap from 'bootstrap'
+
 import {Empty, GenomeAssemblySelection} from "./Module";
 import {GeneSearch} from "./GeneSearch"
 import {LocationSearch} from "./LocationSearch"
@@ -10,7 +12,6 @@ import {LocationSearch} from "./LocationSearch"
 import VariantDetail from "./VariantDetail";
 import Preset from "./Preset";
 
-import './App.css';
 import IGVFLogo from "./images/igvf.png";
 import CardLogo from "./images/loader.gif";
 import GeneSearchLogo from "./images/GeneSearchCard.jpeg";
@@ -22,20 +23,13 @@ import {GitHubSVG, LocationSVG, AboutSVG, VariantSVG, GeneSVG} from "./SVGLogo";
 import D3Element from "./D3Test";
 import {Table1ComplicateTest, Table1Test} from "./ReusableElements"
 import {Tab} from "@mui/material";
+import GenomeBrowserTest from "./GenomeBrowser";
 
 const pageTypeContext = React.createContext(null);
 
 
-/*
-* TODO
-    * 2. Gene Search Location Visualization
-    * 3. Lollipop Graph
-    *
-* */
 
-
-
-function Header(props){
+function HeaderOLD(props){
 
     const { pageType, setPageType } = useContext(pageTypeContext);
     // <a className={"navbarElementHome navbarElementA"}>IGVF Catalog</a>
@@ -55,15 +49,56 @@ function Header(props){
     </li>
 }
 
+function Header(props){
 
-function FooterOLD(props){
-    return <li  className={"footer"}>
-        <ul className={"footerElement"}><a className={"footerElementA"}>Link 0</a></ul>
-        <ul className={"footerElement"}><a className={"footerElementA"}>Link 1</a></ul>
-        <ul className={"footerElement"}><a className={"footerElementA"}>Link 2</a></ul>
-        <ul className={"footerElement"}><a className={"footerElementA"}>Link 3</a></ul>
-        <ul className={"footerElement"}><a className={"footerElementA"}>Link 4</a></ul>
-    </li>
+    const { pageType, setPageType } = useContext(pageTypeContext);
+    const [ showMenu, setShowMenu ] = useState(false);
+
+    function closeMenu(){
+        document.getElementsByClassName("navbar")[0].style.height = "72px";
+        document.getElementsByClassName("appContainer")[0].style.gridTemplateRows = "72px auto 80px";
+        setShowMenu(false);
+    }
+
+    function extendMenu(){
+        document.getElementsByClassName("navbar")[0].style.height = "420px";
+        document.getElementsByClassName("appContainer")[0].style.gridTemplateRows = "420px auto 80px";
+        setShowMenu(true);
+    }
+
+    const onClickHandler = (e) => {
+        if (e.target.checked){
+            extendMenu();
+        } else {
+            closeMenu();
+        }
+    }
+
+    window.addEventListener("resize", (e) => {
+        if (showMenu && window.innerWidth > 1000){
+            closeMenu();
+        }
+    });
+
+    return <div className={"navbar"}>
+
+        <input className="side-menu" type="checkbox" id="side-menu" onClick={onClickHandler} checked={showMenu}/>
+        <label className="hamb" htmlFor="side-menu"><span className="hamb-line"></span></label>
+
+        <div
+            className={"navbarElement"}
+            onClick={() => setPageType("home")}>
+            <img src={IGVFLogo} alt={"123"} width={138} ></img>
+        </div>
+
+        <div className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("geneSearch"); closeMenu()}} ><GeneSVG></GeneSVG> <span className={"headerText"}>Gene Search</span></a></div>
+        <div className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("locSearch"); closeMenu()}} ><LocationSVG></LocationSVG> <span className={"headerText"}>Location Search</span></a></div>
+        <div className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("variantID"); closeMenu()}} ><VariantSVG></VariantSVG> <span className={"headerText"}>Variant</span></a></div>
+        <div className={"navbarElement"}><a className={"navbarElementA"} onClick={() => {setPageType("about"); closeMenu()}} ><AboutSVG></AboutSVG> <span className={"headerText"}>About</span></a></div>
+        <div className={"navbarElement"}><a className={"navbarElementA"} href={"https://github.com/Hendricks27/IGVFCatalog/issues"} target={"_blank"}><GitHubSVG></GitHubSVG> <span className={"headerText"}>Contact</span></a></div>
+
+
+    </div>
 }
 
 function Footer(props){
@@ -73,6 +108,10 @@ function Footer(props){
         <span>Terms and Conditions of Use</span>
     </div>
 }
+
+
+
+
 
 function Card(props){
 
@@ -178,10 +217,10 @@ function IGVFMainPage(props) {
 
     return (
         <pageTypeContext.Provider value={{pageType, setPageType}}>
-            <div className="App" style={{width: "100%", height: "100vh", overflow: "auto"}}>
+            <div className="appContainer" >
 
                 <Header />
-
+                <div className={"contentContainer"}>
                 {
                     (() => {
                         let ele = <HomePageContent />;
@@ -218,7 +257,7 @@ function IGVFMainPage(props) {
                         return ele
                     })()
                 }
-
+                </div>
 
                 <Footer />
 
@@ -237,7 +276,7 @@ function TestPage(props){
         window.location.protocol + '//' + window.location.host + window.location.pathname + "?test"
     )
 
-    return <Table1ComplicateTest></Table1ComplicateTest>
+    return <GenomeBrowserTest></GenomeBrowserTest>
 }
 
 

@@ -346,7 +346,7 @@ export default function VariantDetail(props){
         window.location.protocol + '//' + window.location.host + window.location.pathname + "?variantID=" + variantID
     )
 
-    return <div className={"searchContainer"}>
+    return <div className={"contentContainerBorder"}>
         <VariantInput variantID={variantID} setVariantID={setVariantID} variantDetailCounter={variantDetailCounter} setVariantDetailCounter={setVariantDetailCounter}></VariantInput>
         <br></br><br></br><br></br>
         <VariantdbSNPTableContainer variantID={variantID} setVariantID={setVariantID} variantDetailCounter={variantDetailCounter} setVariantDetailCounter={setVariantDetailCounter}></VariantdbSNPTableContainer>
