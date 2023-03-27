@@ -495,7 +495,7 @@ export function GenomeBrowserRefGene(props){
                 let mvn = getMinimumVerticalNum(d, 3);
                 setMinimumVerticalNum(mvn)
                 setRefGenesInThisRegion(d)
-                console.log(d, mvn)
+                // console.log(d, mvn)
             })
             .catch(function (error) {
                 // console.log(geneName, error);

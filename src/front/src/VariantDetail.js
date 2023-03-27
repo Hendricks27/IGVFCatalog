@@ -4,6 +4,8 @@ import React, { useContext, useEffect, useState } from "react";
 import {geneNameSearchURLConstructor} from "./API";
 import {tab} from "@testing-library/user-event/dist/tab";
 
+import {LoadingContainer} from "./ReusableElements";
+
 
 function arrayCount(arrayx, val){
     return arrayx.filter(e => e === val).length;
@@ -38,6 +40,10 @@ function VariantTable(props){
 
     const variantID = props.variantID;
     const variantDetailResult = props.variantDetailResult;
+
+    if (props.showLoading){
+        return <LoadingContainer/>
+    }
 
     if (variantDetailResult.length == 0){
         return <div>
@@ -135,7 +141,7 @@ function VariantTable(props){
         }
 
 
-        let table0 = <table className={"table1"}>
+        let table0 = <table className={"table1"} >
             <caption>Variant</caption>
             <thead><tr><th>Property</th><th>Value</th></tr></thead>
             <tbody>
@@ -252,7 +258,7 @@ function VariantTable(props){
     }
 
 
-    return <div>
+    return <div className={"tableContainerWide"}>
         { tables.map((t) => <div>{t}<br></br><br></br></div>) }
         <br></br><br></br><br></br><br></br>
     </div>
@@ -267,16 +273,19 @@ function VariantTableContainer(props){
     const variantDetailCounter = props.variantDetailCounter;
     const setVariantDetailCounter = props.setVariantDetailCounter;
 
+    const showLoading = props.showLoading;
+    const setShowLoading = props.setShowLoading;
+
     const [variantDetailResult, setVariantDetailResult] = useState([]);
 
     let searchurl = "https://8z6tnsj4te.execute-api.us-east-2.amazonaws.com/dev/1000genome/variantsearch/" + variantID;
 
     const queryVariantByID = function (){
-
+        setShowLoading(true)
         axios.get(searchurl)
             .then(function (response) {
                 setVariantDetailResult(response.data)
-                console.log(123)
+                setShowLoading(false)
             })
             .catch(function (error) {
                 // console.log(geneName, error);
@@ -288,7 +297,11 @@ function VariantTableContainer(props){
         queryVariantByID();
     }, [variantDetailCounter]);
 
-    return <VariantTable variantDetailResult={variantDetailResult} variantID={variantID}></VariantTable>
+    return <VariantTable
+        variantDetailResult={variantDetailResult}
+        variantID={variantID}
+        showLoading={showLoading}
+    />
 
 }
 
@@ -310,8 +323,7 @@ function VariantdbSNPTableContainer(props){
         axios.get(searchurl)
             .then(function (response) {
                 setVariantdbSNPDetailResult(response.data)
-                console.log(response.data)
-                console.log(123)
+                // console.log(response.data)
             })
             .catch(function (error) {
                 // console.log(geneName, error);
@@ -339,6 +351,7 @@ export default function VariantDetail(props){
 
     const [variantID, setVariantID] = useState(variantIDtmp);
     const [variantDetailCounter, setVariantDetailCounter] = useState(0);
+    const [showLoading, setShowLoading] = useState(false);
 
     window.history.pushState(
         {},
@@ -347,10 +360,27 @@ export default function VariantDetail(props){
     )
 
     return <div className={"contentContainerBorder"}>
-        <VariantInput variantID={variantID} setVariantID={setVariantID} variantDetailCounter={variantDetailCounter} setVariantDetailCounter={setVariantDetailCounter}></VariantInput>
+        <VariantInput
+            variantID={variantID}
+            setVariantID={setVariantID}
+            variantDetailCounter={variantDetailCounter}
+            setVariantDetailCounter={setVariantDetailCounter}
+        />
         <br></br><br></br><br></br>
-        <VariantdbSNPTableContainer variantID={variantID} setVariantID={setVariantID} variantDetailCounter={variantDetailCounter} setVariantDetailCounter={setVariantDetailCounter}></VariantdbSNPTableContainer>
-        <VariantTableContainer variantID={variantID} setVariantID={setVariantID} variantDetailCounter={variantDetailCounter} setVariantDetailCounter={setVariantDetailCounter}></VariantTableContainer>
+        <VariantdbSNPTableContainer
+            variantID={variantID}
+            setVariantID={setVariantID}
+            variantDetailCounter={variantDetailCounter}
+            setVariantDetailCounter={setVariantDetailCounter}
+        />
+        <VariantTableContainer
+            variantID={variantID}
+            setVariantID={setVariantID}
+            variantDetailCounter={variantDetailCounter}
+            setVariantDetailCounter={setVariantDetailCounter}
+            showLoading={showLoading}
+            setShowLoading={setShowLoading}
+        />
     </div>
 }
 
