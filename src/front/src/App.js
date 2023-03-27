@@ -24,6 +24,7 @@ import D3Element from "./D3Test";
 import {Table1ComplicateTest, Table1Test} from "./ReusableElements"
 import {Tab} from "@mui/material";
 import GenomeBrowserTest from "./GenomeBrowser";
+import {TestMain} from "./TestPage";
 
 const pageTypeContext = React.createContext(null);
 
@@ -81,13 +82,20 @@ function Header(props){
     });
 
     return <div className={"navbar"}>
-
-        <input className="side-menu" type="checkbox" id="side-menu" onClick={onClickHandler} checked={showMenu}/>
-        <label className="hamb" htmlFor="side-menu"><span className="hamb-line"></span></label>
+        <div style={{
+            position: "relative",
+            display: "inline",
+            width: "0",
+            height: "0",
+        }}>
+            <input className="side-menu" type="checkbox" id="side-menu" onClick={onClickHandler} checked={showMenu}/>
+            <label className="hamb" htmlFor="side-menu"><span className="hamb-line"></span></label>
+        </div>
 
         <div
             className={"navbarElement"}
-            onClick={() => setPageType("home")}>
+            onClick={() => setPageType("home")}
+        >
             <img src={IGVFLogo} alt={"123"} width={138} ></img>
         </div>
 
@@ -277,6 +285,17 @@ function TestPage(props){
     )
 
     return <GenomeBrowserTest></GenomeBrowserTest>
+}
+
+function TestPage2(props){
+
+    window.history.pushState(
+        {},
+        '',
+        window.location.protocol + '//' + window.location.host + window.location.pathname + "?test"
+    )
+
+    return <TestMain></TestMain>
 }
 
 

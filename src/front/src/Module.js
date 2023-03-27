@@ -32,7 +32,7 @@ import {LoadingContainer} from "./ReusableElements";
 
 import ThousandGenomeLogo from "./images/1000GenomesLogo.jpeg";
 import FavorLogo from "./images/FavorLogo.png";
-import GenomeBrowserTest, {GenomeBrowserRefGene, GenomeBrowserRuler} from "./GenomeBrowser";
+import GenomeBrowserTest, {GenomeBrowserRefGene, GenomeBrowserRuler, ChromosomeCytoBand} from "./GenomeBrowser";
 
 
 export function Empty(props){
@@ -138,6 +138,8 @@ function VariationSearchResultLollipopPlaceHolder(props){
         <br /><br />
     </div>
 }
+
+
 
 
 function VariationSearchResultInDev1(props){
@@ -451,7 +453,6 @@ function VariationSearchResultInDev1(props){
             .attr("fill", (d) => d.fill)
             .attr("opacity", (d) => d.opacity)
 
-        console.log(chromosome)
 
     }
 
@@ -465,12 +466,21 @@ function VariationSearchResultInDev1(props){
             <GenomeBrowserRefGene
                 svgHeight={"300px"}
 
-                verticalGeneNum={10}
+                verticalGeneNumLimit={10}
 
-                chromosome={"chr1"}
+                chromosome={chromosome}
                 positionStart={chrMin}
                 positionEnd={chrMax}
             />
+            <GenomeBrowserRuler
+                svgHeight={"30px"}
+
+                tickNum={10}
+
+                RulerStart={chrMin}
+                RulerEnd={chrMax}
+            />
+
             <div style={{width: "100%", height: "600px"}}>
                 <svg ref={ref} style={{width: "100%", height: "100%", marginRight: "0px", marginLeft: "0px"}} >
                 </svg>
@@ -997,7 +1007,7 @@ function FavorGraphs(props){
         }
 
         if (wiw <= 1000){
-            plotWidth = wiw * 0.95
+            plotWidth = (wiw-40) * 0.98
         } else {
             plotWidth = wiw * 0.83 / plotColumn
         }
@@ -1006,8 +1016,16 @@ function FavorGraphs(props){
         return plotWidth
     }
     let [plotWidth, setPlotWidth] = useState(resizePlotWidth());
+    let lastResize = 0;
     window.addEventListener('resize', (e) => {
-        setPlotWidth(resizePlotWidth())
+        // setPlotWidth(resizePlotWidth())
+        lastResize = Date.now();
+        setTimeout(() => {
+            let now_ts = Date.now();
+            if (now_ts - lastResize > 100){
+                setPlotWidth(resizePlotWidth())
+            }
+        }, 200)
     });
 
     const [customGraphTitle, setCustomGraphTitle] = useState("");
@@ -1043,7 +1061,7 @@ function FavorGraphs(props){
 
 
             setCustomGraphData(customGraphData1DTMP);
-            setCustomGraphLayout({autosize: true, title: customGraphTitle, barmode: 'stack'})
+            setCustomGraphLayout({autosize: false, title: customGraphTitle, barmode: 'stack', width: plotWidth})
 
         } else {
             setCustomGraphTitle(axis1 + " V " + axis2 + " " + customGraphData2DType)
@@ -1093,12 +1111,14 @@ function FavorGraphs(props){
                 scattermode: 'group',
                 title: customGraphTitle,
                 xaxis: {title: axis1},
-                yaxis: {title: axis2}
+                yaxis: {title: axis2},
+                autoResize: false,
+                width: plotWidth,
             }
             setCustomGraphLayout( layout )
         }
     },
-        [oneDimensionGraph, axis1, axis2, customGraphData2DType])
+        [oneDimensionGraph, axis1, axis2, customGraphData2DType, plotWidth])
 
 
     const emptyJSX = <>
@@ -1108,32 +1128,32 @@ function FavorGraphs(props){
         <Plot
             data={graphdata["genecode_comprehensive_category"]}
             useResizeHandler
-            layout={ {autosize: false, title: 'Genecode Comprehensive Category', barmode: 'overlay', width: plotWidth} }
+            layout={ {autosize: false, title: 'Genecode Comprehensive Category', barmode: 'overlay', width: plotWidth, legend: { x:1, y:1, xanchor: 'right', bgcolor: 'rgba(0,0,0,0)'}  } }
         />
 
 
         <Plot
             data={graphdata["linsight"]}
             useResizeHandler
-            layout={ {autosize: false, title: 'LinSight', barmode: 'stack', width: plotWidth} }
+            layout={ {autosize: false, title: 'LinSight', barmode: 'stack', width: plotWidth, legend: { x:1, y:1, xanchor: 'right', bgcolor: 'rgba(0,0,0,0)'}} }
         />
 
         <Plot
             data={graphdata["apc_conservation_v2"]}
             useResizeHandler
-            layout={ {autosize: false, title: 'APC Conservation V2', barmode: 'stack', width: plotWidth} }
+            layout={ {autosize: false, title: 'APC Conservation V2', barmode: 'stack', width: plotWidth, legend: { x:1, y:1, xanchor: 'right', bgcolor: 'rgba(0,0,0,0)'}} }
         />
 
         <Plot
             data={graphdata["apc_mappability"]}
             useResizeHandler
-            layout={ {autosize: false, title: 'APC Mappability', barmode: 'stack', width: plotWidth} }
+            layout={ {autosize: false, title: 'APC Mappability', barmode: 'stack', width: plotWidth, legend: { x:1, y:1, xanchor: 'right', bgcolor: 'rgba(0,0,0,0)'}} }
         />
 
         <Plot
             data={graphdata["cadd_phred"]}
             useResizeHandler
-            layout={ {autosize: false, title: 'CADD phred', barmode: 'stack', width: plotWidth} }
+            layout={ {autosize: false, title: 'CADD phred', barmode: 'stack', width: plotWidth, legend: { x:1, y:1, xanchor: 'right', bgcolor: 'rgba(0,0,0,0)'}} }
         />
     </>
 
@@ -1456,27 +1476,34 @@ function CombinedVariationSearchResultTable(props){
 
     return <>
 
-        <table className={"table1"}>
-            <caption>Result Table</caption>
-            <tr>
-                <th>Position</th>
-                <th>Variation Type</th>
-                <th>Conversion</th>
-                <th>dbSNP ID</th>
-                <th>Description</th>
-                <th>Source</th>
-            </tr>
-            {
-                selectedTableData.map((row) => {
-                    return <tr>{
-                        row.map((e) => {
-                            return <td>{e}</td>
-                        })
-                    }</tr>
-                })
-            }
+        <div className={"tableContainerWide"}>
+            <table className={"table1"}>
+                <caption>Result Table</caption>
+                <thead>
+                    <tr>
+                        <th>Position</th>
+                        <th>Variation Type</th>
+                        <th>Conversion</th>
+                        <th>dbSNP ID</th>
+                        <th>Description</th>
+                        <th>Source</th>
+                    </tr>
+                </thead>
+                <tbody>
 
-        </table>
+                    {
+                        selectedTableData.map((row) => {
+                            return <tr>{
+                                row.map((e) => {
+                                    return <td>{e}</td>
+                                })
+                            }</tr>
+                        })
+                    }
+                </tbody>
+
+            </table>
+        </div>
 
         <ul className={"table1pagebuttons"}>
             <li onClick={() => {setPageNum(1)} }>{"<<"}</li>
@@ -1499,6 +1526,8 @@ function CombinedVariationSearchResultTable(props){
 
 
 function LocationSearchFilterContainer(props){
+
+    const chromosome = props.chromosome;
     const searchStart = parseInt(props.searchStart);
     const searchEnd = parseInt(props.searchEnd);
 
@@ -1506,6 +1535,9 @@ function LocationSearchFilterContainer(props){
     const narrowEnd = props.narrowEnd;
     const setNarrowStart = props.setNarrowStart;
     const setNarrowEnd = props.setNarrowEnd;
+
+    const dataSourceFilter = props.dataSourceFilter;
+    const setDataSourceFilter = props.setDataSourceFilter;
 
 
     const [narrowStartTMP, setNarrowStartTMP] = useState(narrowStart);
@@ -1613,9 +1645,33 @@ function LocationSearchFilterContainer(props){
         [searchStart, searchEnd, narrowStart, narrowEnd]
     );
 
+    const dataSourceSelector = <>
+        {
+            Object.keys(dataSourceFilter).map( (ds) => {
+                // console.log(ds, dataSourceFilter[ds])
+                return <div><label className="checkboxes_container">{ds}
+                    <input
+                        type="checkbox"
+                        name={ds}
+                        checked={dataSourceFilter[ds]}
+                        onChange={(e) => {
+                            let dsf = JSON.parse(JSON.stringify(dataSourceFilter));
+                            dsf[e.target.name] = !dsf[e.target.name];
+                            setDataSourceFilter(dsf)
+                        } }
+                    />
+                    <span className="checkbox_checkmark"></span>
+                </label></div>
+            })
+        }
+    </>
 
     return <>
         <h3>Filters</h3>
+
+        <div style={{textAlign: "center"}}>
+            {dataSourceSelector}
+        </div>
 
         <span>Total Range: {searchStart}:{searchEnd}</span> <br></br>
         <span>Selected: {narrowStartTMP}:{narrowEndTMP}</span><span>({narrowEndTMP-narrowStartTMP} bp / {Math.round(100*(narrowEndTMP-narrowStartTMP)/(searchEnd-searchStart)) } %)</span>
@@ -1623,11 +1679,35 @@ function LocationSearchFilterContainer(props){
         <GenomeBrowserRefGene
             svgHeight={"300px"}
 
-            verticalGeneNum={8}
+            verticalGeneNumLimit={8}
 
-            chromosome={"chr1"}
+            chromosome={chromosome}
+            positionStart={narrowStart}
+            positionEnd={narrowEnd}/>
+        <GenomeBrowserRuler
+            svgHeight={"30px"}
+
+            tickNum={10}
+
+            RulerStart={narrowStart}
+            RulerEnd={narrowEnd}
+        />
+        <div style={{height: "20px"}}>  </div>
+        <div>
+            <div style={{height: "200px", backgroundColor: "lightgray"}}></div>
+        </div>
+        <div style={{height: "20px"}}>  </div>
+        <GenomeBrowserRefGene
+            svgHeight={"300px"}
+
+            verticalGeneNumLimit={8}
+
+            chromosome={chromosome}
             positionStart={searchStart}
             positionEnd={searchEnd}/>
+
+
+        <div style={{height: "20px"}}>  </div>
         <GenomeBrowserRuler
             svgHeight={"30px"}
 
@@ -1659,6 +1739,12 @@ function LocationSearchFilterContainer(props){
                 setNarrowEnd(narrowEndTMP);
             }}
         />
+
+        <ChromosomeCytoBand
+            chromosome={chromosome}
+            positionStart={searchStart}
+            positionEnd={searchEnd}
+        />
     </>
 }
 
@@ -1682,7 +1768,7 @@ export function LocationSearchResultContainer(props){
 
     const [dataSourceFilter, setDataSourceFilter] = useState({
         "1000Genome": true,
-        "ClinVar": true
+        "Favor": true
     });
     const [variationTypeFilter, setVariationTypeFilter] = useState({
         "SNV": true,
@@ -1748,11 +1834,18 @@ export function LocationSearchResultContainer(props){
     }, [searchCount]);
 
 
+    let oneKGenomeJSX = <></>;
+    if (dataSourceFilter["1000Genome"]){
+        oneKGenomeJSX = oneKGenomeDataLoaded ? <OneThousandGenomeGraphs data={oneKGenomeData} narrowStart={narrowStart} narrowEnd={narrowEnd}/> : <><h3>Fetching 1000 Genome</h3><LoadingContainer width={100}/></>
+    }
+
+
 
     return <>
 
         <div className={"contentContainerBorder"}>
             <LocationSearchFilterContainer
+                chromosome={chr}
                 searchStart={searchStart}
                 searchEnd={searchEnd}
 
@@ -1760,48 +1853,31 @@ export function LocationSearchResultContainer(props){
                 narrowEnd={narrowEnd}
                 setNarrowStart={setNarrowStart}
                 setNarrowEnd={setNarrowEnd}
-            />
-        </div>
 
-        <div className={"contentContainerBorder"}>
-            <VariationSearchResult
-                genomeAssembly={genomeAssembly}
-                searchResult={searchResult}
                 dataSourceFilter={dataSourceFilter}
-                variationTypeFilter={variationTypeFilter}
-
-                searchChr={searchChr}
-                searchStart={searchStart}
-                searchEnd={searchEnd}
-
-                narrowStart={narrowStart}
-                narrowEnd={narrowEnd}
+                setDataSourceFilter={setDataSourceFilter}
             />
         </div>
 
-        <div className={"contentContainerBorder"}>
+        <div className={"contentContainerBorder tableContainerWide"} >
             <CombinedVariationSearchResultTable oneKGenomeData={oneKGenomeData} favorData={favorData} narrowStart={narrowStart} narrowEnd={narrowEnd}/>
             {
                 [oneKGenomeDataLoaded, favorDataLoaded].includes(false) ? <><span>Still Fetching From Other Souces</span><LoadingContainer width={20}/></> : <></>
             }
         </div>
 
-        <div className={"contentContainerBorder"}>
-            {
-                oneKGenomeDataLoaded ? <OneThousandGenomeGraphs data={oneKGenomeData} narrowStart={narrowStart} narrowEnd={narrowEnd}/> : <><h3>Fetching 1000 Genome</h3><LoadingContainer width={100}/></>
-            }
-        </div>
 
-        <div className={"contentContainerBorder"}>
-            {
-                favorDataLoaded ? <FavorGraphs data={favorData} narrowStart={narrowStart} narrowEnd={narrowEnd}/> : <><h3>Fetching FAVOR</h3><LoadingContainer width={100}/></>
-            }
-        </div>
+        {
+            dataSourceFilter["1000Genome"] ? <div className={"contentContainerBorder"}> { oneKGenomeDataLoaded ? <OneThousandGenomeGraphs data={oneKGenomeData} narrowStart={narrowStart} narrowEnd={narrowEnd}/> : <><h3>Fetching 1000 Genome</h3><LoadingContainer width={100}/></> } </div> : <></>
+        }
+
+        {
+            dataSourceFilter["Favor"] ? <div className={"contentContainerBorder"}> { favorDataLoaded ? <FavorGraphs data={favorData} narrowStart={narrowStart} narrowEnd={narrowEnd}/> : <><h3>Fetching FAVOR</h3><LoadingContainer width={100}/></> } </div> : <></>
+        }
 
 
 
-
-        <br></br><br></br><br></br><br></br><br></br>
+        <br></br><br></br><br></br>
 
 
     </>

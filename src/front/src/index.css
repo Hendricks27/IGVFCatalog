@@ -1,6 +1,25 @@
+:root {
+  --theme_color: rgb(69, 117, 134);
+  --background_color_base: white;
+  --background_color_container: white;
+}
+
+
+/*
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background_color_base: rgb(40, 40, 30);
+    --background_color_container: rgb(220, 220, 220);
+  }
+}
+*/
+
+
+
 body {
   margin: 0;
   padding: 0;
+  background-color: var(--background_color_base);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -15,6 +34,8 @@ body {
 }
 
 
+
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
@@ -24,9 +45,6 @@ table {
   margin: auto
 }
 
-@media (prefers-color-scheme: dark) {
-
-}
 
 
 .appContainer {
@@ -53,9 +71,15 @@ table {
   display: inline-block;
   border: 2px solid lightgrey;
   margin: 6px 0 6px 0;
+  background-color: var(--background_color_container);
   padding: 10px;
   border-radius: 10px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.tableContainerWide {
+  max-width: calc(100vw - 28px);
+  overflow-x: scroll;
 }
 
 
@@ -85,7 +109,7 @@ table {
 }
 
 .navbarElementHome {
-  background-color: rgb(69, 117, 134);
+  background-color: var(--theme_color);
   height: 100%;
 }
 
@@ -107,9 +131,9 @@ table {
   padding: 40px 20px;
   display: none;
 
-  top: -3px;
-  left: 10px;
-  position: absolute;
+  top: 17px;
+  left: 25px;
+  position: relative;
 }
 
 .hamb-line {
@@ -229,6 +253,8 @@ table {
   border-radius: 10px;
   cursor: pointer;
 
+  background-color: var(--background_color_container);
+
   transition: 200ms ease-out 100ms
 }
 
@@ -267,7 +293,7 @@ table {
 
 
 .pageTitle {
-  color: rgb(69, 117, 134);
+  color: var(--theme_color);
 }
 
 
@@ -370,7 +396,7 @@ table {
   margin: auto;
   width: 100%;
   height: 45px;
-  background: rgb(69, 117, 134);
+  background: var(--theme_color);
   overflow: hidden;
 }
 
@@ -390,4 +416,71 @@ table {
   border: 3px solid gray;
   box-sizing: border-box;
   box-shadow: 0 0 0 9999px lightgrey;
+}
+
+
+
+/* Custom Checkbox*/
+.checkboxes_container {
+  width: 150px;
+  text-align: center;
+  display: inline-block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-size: 22px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.checkboxes_container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkbox_checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 25px;
+  width: 25px;
+  background-color: #eee;
+}
+
+.checkboxes_container:hover input ~ .checkbox_checkmark {
+  background-color: #ccc;
+}
+
+.checkboxes_container input:checked ~ .checkbox_checkmark {
+  background-color: var(--theme_color);
+}
+
+.checkboxes_container:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkboxes_container input:checked ~ .checkbox_checkmark:after {
+  display: block;
+  height: 100px;
+  width: 100px;
+}
+
+.checkboxes_container .checkbox_checkmark:after {
+  left: 9px;
+  top: 5px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
 }

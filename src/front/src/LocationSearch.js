@@ -14,7 +14,7 @@ import {
 export function LocationSearch(props){
 
     const urlParams = props.urlParams;
-    let locationtmp = "chr1:167050000-167060000";
+    let locationtmp = "chr1:167050000-167120000";
     let searchCountTmp = 0;
     if (urlParams.get('location') != null){
         locationtmp = urlParams.get('location')
@@ -64,7 +64,13 @@ export function LocationSearch(props){
                     <form onSubmit={handleSubmit}>
 
                         <label>Location: </label>
-                        <input type={"text"} value={genomicLocation} onChange={(e) => {setGenomicLocation(e.target.value)}} />
+                        <input
+                            type={"text"}
+                            size={30}
+                            value={genomicLocation}
+                            onChange={(e) => {setGenomicLocation(e.target.value)}}
+                            style={{textAlign: "center"}}
+                        />
 
                         <Empty /> <button onClick={ () => { setSearchCount(searchCount+1); }} >Search</button>
                     </form>

@@ -5,11 +5,11 @@ import * as d3 from 'd3';
 
 
 
-export const useD3 = (renderChartFn, dependencies) => {
+export const useD3 = (renderChartFn, dependencies, argv) => {
     const ref = React.useRef();
 
     React.useEffect(() => {
-        renderChartFn(d3.select(ref.current));
+        renderChartFn(d3.select(ref.current), argv);
         return () => {};
     }, dependencies);
 
