@@ -17,16 +17,29 @@ function ListGeneName(props){
     const geneNameSelected = props.geneNameSelected;
     const setGeneNameSelected = props.setGeneNameSelected;
 
-    const genomicLocation = props.genomicLocation;
-    const setGenomicLocation = props.setGenomicLocation;
+
+    const setInputStage = props.setInputStage;
+    const setShowLoadingCircle = props.setShowLoadingCircle;
 
     const [geneNameOptions, setGeneNameOptions] = useState([]);
 
     const queryGeneName = function (){
         if (geneName.length >= 3 && !geneNameSelected){
+
+            setShowLoadingCircle(true);
             axios.get(geneNameSearchURLConstructor(genomeAssembly, geneName))
                 .then(function (response) {
-                    setGeneNameOptions(response.data)
+
+                    setShowLoadingCircle(false);
+                    if (response.data.length === 1){
+                        if (response.data[0] === geneName){
+                            setInputStage(2);
+                        }
+                    }
+                    else {
+                        setGeneNameOptions(response.data)
+                    }
+
                 })
                 .catch(function (error) {
                     // console.log(geneName, error);
@@ -47,9 +60,7 @@ function ListGeneName(props){
             <li className={"geneNameOptions"}>
                 {geneNameOptions.map((gn) => <ul onClick={ function (){
                     setGeneName(gn);
-                    setGeneNameOptions([]);
-                    setGeneNameSelected(true);
-                    setGenomicLocation("");
+                    setInputStage(2);
                 } }  className={"geneNameOption"}>{gn}</ul>)}
             </li>
         </div>
@@ -69,16 +80,19 @@ function ListGenePosition(props){
     const genomicLocation = props.genomicLocation;
     const setGenomicLocation = props.setGenomicLocation;
 
-    const searchCount = props.searchCount;
-    const setSearchCount = props.setSearchCount;
-
     const [genePositions, setGenePositions] = useState([]);
 
+    const setInputStage = props.setInputStage;
+    const setShowLoadingCircle = props.setShowLoadingCircle;
+
     const queryGeneLocation = function (){
+
         if (!geneNameSelected){
 
+            setShowLoadingCircle(true);
             axios.get(geneLocationSearchURLConstructor(genomeAssembly, geneName))
                 .then(function (response) {
+                    setShowLoadingCircle(false);
                     setGenePositions(response.data)
                 })
                 .catch(function (error) {
@@ -245,8 +259,7 @@ function ListGenePosition(props){
                 return <tr onClick={function (e) {
                     const loc = gp.chrom + ":" + gp.txStart + "-" + gp.txEnd;
                     setGenomicLocation(loc);
-                    setGenePositions([]);
-                    setSearchCount(searchCount + 1)
+                    setInputStage(3);
                 }} className={"genePositionRow"}>
                     <td>{source}<br />{coord}</td>
                     <td>{geneRegionSVG}</td>
@@ -273,15 +286,20 @@ export function GeneSearch(props){
     )
 
     const [geneName, setGeneName] = useState("");
-    const [geneNameSelected, setGeneNameSelected] = useState(false);
 
     const [genomicLocation, setGenomicLocation] = useState("chr1:1-10");
-    const [searchCount, setSearchCount] = useState(0);
 
 
     const [availableDatasetByGenomeAssembly, setAvailableDatasetByGenomeAssembly] = useState(availableGenomeAndDataset);
     const [genomeAssembly, setGenomeAssembly] = useState("hg38");
     const [selectedDataset, setSelectedDataset] = useState({});
+
+    // 0: Initial
+    // 1: Text inputing
+    // 2: Selected gene name
+    // 3: Selected genomic location
+    const [inputStage, setInputStage] = useState(0);
+    const [showLoadingCircle, setShowLoadingCircle] = useState(false);
 
 
 
@@ -305,33 +323,38 @@ export function GeneSearch(props){
                     <input
                         type={"text"}
                         value={geneName}
-                        onChange={(e) => {setGeneName(e.target.value);setGeneNameSelected(false)}}
+                        onChange={(e) => {
+                            setGeneName(e.target.value);
+                            setInputStage(1);
+                        }}
                     />
-                    {geneNameSelected && genomicLocation !== "" ? <Empty /> : <img src={loader} alt={"xxx"} style={{width: "18px", margin: "auto"}}/>}
+                    {
+                        [1, 2].includes(inputStage) && showLoadingCircle ? <img src={loader} alt={"xxx"} style={{width: "18px", margin: "auto"}}/> : <></>
+                    }
                 </form>
-                <ListGeneName
-                    genomeAssembly={genomeAssembly}
-                    geneName={geneName}
-                    setGeneName={setGeneName}
-                    geneNameSelected={geneNameSelected}
-                    setGeneNameSelected={setGeneNameSelected}
-                    genomicLocation={genomicLocation}
-                    setGenomicLocation={setGenomicLocation}
-                />
-                <ListGenePosition
-                    genomeAssembly={genomeAssembly}
-                    geneName={geneName}
-                    setGeneName={setGeneName}
-                    genomicLocation={genomicLocation}
-                    setGenomicLocation={setGenomicLocation}
-                    searchCount={searchCount}
-                    setSearchCount={setSearchCount}
-                />
+                {
+                    inputStage === 1 ? <ListGeneName
+                        genomeAssembly={genomeAssembly}
+                        geneName={geneName}
+                        setGeneName={setGeneName}
+
+                        setInputStage={setInputStage}
+                        setShowLoadingCircle={setShowLoadingCircle}
+                    /> : <></>
+                }
+                {
+                    inputStage === 2 ? <ListGenePosition
+                        genomeAssembly={genomeAssembly}
+                        geneName={geneName}
+                        setInputStage={setInputStage}
+                        setGenomicLocation={setGenomicLocation}
+                        setShowLoadingCircle={setShowLoadingCircle}
+                    /> : <></>
+                }
 
             </div>
 
-            <div>123</div>
-            {searchCount > 0 ? <LocationSearchResultContainer genomeAssembly={genomeAssembly} genomicLocation={genomicLocation} searchCount={searchCount} /> : <Empty /> }
+            {inputStage === 3 ? <LocationSearchResultContainer genomeAssembly={genomeAssembly} genomicLocation={genomicLocation} /> : <Empty /> }
 
 
         </div>

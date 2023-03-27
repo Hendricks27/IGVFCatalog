@@ -297,7 +297,6 @@ export function GenomeBrowserRefGeneSubTrack(props){
                 for (let ei in exonStarts){
                     let es = parseInt(exonStarts[ei]);
                     let ee = parseInt(exonEnds[ei]);
-                    console.log(rg.name, ei, es, ee)
 
                     let tmpExon = {
                         x: scaleX(es).toString() + "%",
@@ -306,7 +305,6 @@ export function GenomeBrowserRefGeneSubTrack(props){
                         height: "42%",
                         fill: fillColor,
                     }
-                    // console.log(tmpExon)
                     geneRect.push(tmpExon)
                 }
 
